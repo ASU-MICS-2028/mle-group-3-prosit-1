@@ -1,0 +1,13 @@
+# Course data package, including the licensed DHS extract. Never committed.
+data/*
+!data/.gitkeep
+
+# Safety net for survey files that end up anywhere else in the tree.
+# The repo is public; force-add (git add -f) a shareable aggregate if you must.
+*.csv
+*.[dD][tT][aA]
+
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
