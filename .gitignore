@@ -6,6 +6,8 @@ data/*
 # The repo is public; force-add (git add -f) a shareable aggregate if you must.
 *.csv
 *.[dD][tT][aA]
+*.docx
+*.xlsx
 
 .venv/
 __pycache__/
