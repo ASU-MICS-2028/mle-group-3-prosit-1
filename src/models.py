@@ -1,14 +1,7 @@
 """Count-data models: Poisson and Negative Binomial.
 
-Poisson is fitted to demonstrate its failure under over-dispersion.
-Negative Binomial is the working model (see CLAUDE.md, statistical conventions).
-
-Two levels are provided deliberately:
-
-* `moment_summary` / `nb_alpha_from_moments` -- the marginal, no-covariate view.
-  Transparent algebra we can defend on a slide without invoking an optimiser.
-* `fit_poisson` / `fit_negative_binomial_mle` -- GLMs with covariates and an
-  exposure offset, which is how the counts should actually be modelled.
+Poisson is fitted to demonstrate its failure under over-dispersion; the
+Negative Binomial is the working model.
 """
 
 from typing import Any, Dict, Optional
@@ -20,12 +13,7 @@ import statsmodels.formula.api as smf
 
 
 def moment_summary(y: pd.Series) -> Dict[str, float]:
-    """Mean, variance and the variance-to-mean ratio of a count vector.
-
-    A ratio of 1.0 is the Poisson signature (mean == variance). Anything
-    meaningfully above 1.0 is over-dispersion, which is what A1 asks us to look
-    for. Uses the sample variance (ddof=1).
-    """
+    """Mean, variance and variance/mean ratio. Poisson requires the ratio to be 1."""
     y = pd.Series(y).dropna()
     mean = float(y.mean())
     var = float(y.var(ddof=1))
@@ -40,13 +28,7 @@ def moment_summary(y: pd.Series) -> Dict[str, float]:
 
 
 def nb_alpha_from_moments(y: pd.Series) -> float:
-    """Method-of-moments estimate of the NB dispersion parameter alpha.
-
-    The NB2 variance function is Var = mu + alpha * mu**2, so rearranging on the
-    sample moments gives alpha = (Var - mean) / mean**2. Poisson is the alpha=0
-    special case. This is the one-line derivation to put on the slide; the MLE
-    in `fit_negative_binomial_mle` is the number we actually report.
-    """
+    """Method-of-moments alpha, from NB2's Var = mu + alpha*mu^2. Poisson is alpha=0."""
     m = moment_summary(y)
     if m["mean"] <= 0:
         return float("nan")
@@ -56,62 +38,46 @@ def nb_alpha_from_moments(y: pd.Series) -> float:
 def poisson_pmf_expected(
     y: pd.Series, bin_edges: np.ndarray, lam: Optional[float] = None
 ) -> np.ndarray:
-    """Expected number of observations per histogram bin under Poisson(lam).
+    """Expected observations per histogram bin under Poisson(lam).
 
-    Integrates the pmf over each bin via the CDF rather than evaluating it at bin
-    centres, so the overlay is comparable to the observed histogram even when the
-    bins are far wider than the pmf's support.
+    Integrates the pmf over each bin via the CDF, so the overlay stays
+    comparable when bins are far wider than the pmf's spread.
     """
     from scipy import stats
 
     y = pd.Series(y).dropna()
     lam = float(y.mean()) if lam is None else float(lam)
-    cdf = stats.poisson.cdf(bin_edges, lam)
-    return np.diff(cdf) * y.size
+    return np.diff(stats.poisson.cdf(bin_edges, lam)) * y.size
 
 
 def nbinom_pmf_expected(
     y: pd.Series, bin_edges: np.ndarray, alpha: Optional[float] = None
 ) -> np.ndarray:
-    """Expected observations per bin under NB2 with mean = mean(y) and dispersion alpha.
-
-    scipy parameterises NB as (n, p); the NB2 mapping is n = 1/alpha and
-    p = n / (n + mu).
-    """
+    """Expected observations per bin under NB2 with mean(y) and dispersion alpha."""
     from scipy import stats
 
     y = pd.Series(y).dropna()
     mu = float(y.mean())
     alpha = nb_alpha_from_moments(y) if alpha is None else float(alpha)
     n = 1.0 / alpha
-    p = n / (n + mu)
-    cdf = stats.nbinom.cdf(bin_edges, n, p)
-    return np.diff(cdf) * y.size
+    return np.diff(stats.nbinom.cdf(bin_edges, n, n / (n + mu))) * y.size
 
 
 def check_design_matrix(formula: str, data: pd.DataFrame) -> pd.DataFrame:
-    """Diagnose a model formula before fitting it.
+    """Flag constant and collinear design columns before fitting.
 
-    Two failure modes bit us on this dataset and both produce a *singular*
-    Hessian, which statsmodels surfaces only as an opaque LinAlgError:
-
-    * a constant column (zero variance) is collinear with the intercept;
-    * two columns that encode the same thing -- here `net_coverage_pct` is a
-      region-level value joined onto districts, so it takes one distinct value
-      per region and is perfectly collinear with `C(region_code)`.
-
-    Returns one row per design column with its distinct-value count, plus a
-    `rank_deficient` flag in `.attrs`. Run this before every fit.
+    Both make the Hessian singular, which statsmodels reports only as an opaque
+    LinAlgError. Returns a per-column report; `.attrs` carries rank,
+    n_columns and rank_deficient.
     """
     import patsy
 
-    y, X = patsy.dmatrices(formula, data, return_type="dataframe")
+    _, X = patsy.dmatrices(formula, data, return_type="dataframe")
     rank = int(np.linalg.matrix_rank(X.to_numpy()))
     report = pd.DataFrame(
         {
             "n_distinct": X.nunique(),
             "std": X.std(ddof=0).round(6),
-            # The intercept is constant by construction; flagging it would be noise.
             "constant": (X.nunique() == 1) & (X.columns != "Intercept"),
         }
     )
@@ -124,14 +90,10 @@ def check_design_matrix(formula: str, data: pd.DataFrame) -> pd.DataFrame:
 def fit_poisson(
     formula: str, data: pd.DataFrame, offset: Optional[np.ndarray] = None
 ) -> Any:
-    """Fit a Poisson GLM. Pass `offset=np.log(population)` to model a rate.
-
-    Fitted to demonstrate its failure, not as a candidate model.
-    """
-    model = smf.glm(
+    """Fit a Poisson GLM. Pass offset=np.log(population) to model a rate."""
+    return smf.glm(
         formula=formula, data=data, family=sm.families.Poisson(), offset=offset
-    )
-    return model.fit()
+    ).fit()
 
 
 def fit_negative_binomial_mle(
@@ -140,18 +102,12 @@ def fit_negative_binomial_mle(
     offset: Optional[np.ndarray] = None,
     maxiter: int = 500,
 ) -> Any:
-    """Fit an NB2 regression, estimating alpha by maximum likelihood.
+    """Fit NB2, estimating alpha by MLE. Read it off `results.params['alpha']`.
 
-    Uses `smf.negativebinomial` rather than `smf.glm(family=NegativeBinomial())`:
-    the GLM family takes alpha as a *fixed* input (defaulting to 1.0), so it
-    would report a dispersion we never estimated. Here alpha comes out of the
-    fit and is readable as `results.params['alpha']`.
-
-    The optimiser is started from the Poisson coefficients plus a
-    method-of-moments alpha. Cold-started on counts this large the likelihood is
-    flat enough that the default Newton step fails to invert the Hessian, which
-    costs us the standard errors; warm-starting fixes it. If Newton still fails
-    we fall back to Nelder-Mead, which is slower but does not need the Hessian.
+    Uses smf.negativebinomial, not smf.glm(family=NegativeBinomial()), which
+    takes alpha as a fixed input defaulting to 1.0. Warm-started from the
+    Poisson fit, without which the Hessian fails to invert and the standard
+    errors are lost; falls back to Nelder-Mead if Newton still fails.
     """
     poisson_start = fit_poisson(formula, data, offset=offset)
     y = data[formula.split("~")[0].strip()]
@@ -166,46 +122,34 @@ def fit_negative_binomial_mle(
 
 
 def check_dispersion(poisson_results: Any) -> Dict[str, float]:
-    """Pearson chi-squared dispersion ratio for a fitted Poisson GLM.
-
-    Under a correctly specified Poisson, chi2/df is approximately 1. The ratio is
-    the covariate-adjusted version of the mean-variance check: it asks whether
-    over-dispersion survives after the model has explained what it can.
-    """
+    """Pearson chi2/df for a fitted Poisson GLM. A correct Poisson gives about 1."""
     pearson_chi2 = float(poisson_results.pearson_chi2)
     df_resid = float(poisson_results.df_resid)
-    ratio = pearson_chi2 / df_resid if df_resid > 0 else float("nan")
     return {
         "pearson_chi2": pearson_chi2,
         "df_resid": df_resid,
-        "dispersion_ratio": ratio,
+        "dispersion_ratio": pearson_chi2 / df_resid if df_resid > 0 else float("nan"),
     }
 
 
 def compare_fits(poisson_results: Any, nb_results: Any) -> pd.DataFrame:
-    """Side-by-side log-likelihood / AIC / BIC table for the two fits.
+    """Log-likelihood, AIC and BIC for both fits. Lower AIC is better.
 
-    AIC and BIC are recomputed here from the log-likelihood rather than read off
-    `results.aic`. statsmodels reports a *deviance-based* BIC for GLM results and
-    a likelihood-based one for the discrete NB, so the built-in attributes are on
-    different scales and are not comparable across the two objects.
-
-    Parameter counts come from `len(results.params)`, which correctly charges the
-    NB for its extra alpha. Lower AIC is better; both models are fitted to the
-    same response, so the comparison is valid.
+    AIC/BIC are recomputed from the log-likelihood: statsmodels reports a
+    deviance-based BIC for GLM results and a likelihood-based one for the
+    discrete NB, so the built-in attributes are not comparable.
     """
     rows = []
     for name, res in (("Poisson", poisson_results), ("Negative Binomial", nb_results)):
         k = len(res.params)
         llf = float(res.llf)
-        nobs = float(res.nobs)
         rows.append(
             {
                 "model": name,
                 "n_params": k,
                 "log_likelihood": llf,
                 "AIC": -2 * llf + 2 * k,
-                "BIC": -2 * llf + k * np.log(nobs),
+                "BIC": -2 * llf + k * np.log(float(res.nobs)),
             }
         )
     return pd.DataFrame(rows).set_index("model")

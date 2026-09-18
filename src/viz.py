@@ -1,6 +1,4 @@
-"""Plot helpers, so notebook cells stay under ~20 lines and every figure in the
-deck is styled the same way.
-"""
+"""Plot helpers, so notebook cells stay short and figures share one style."""
 
 from pathlib import Path
 from typing import Optional, Tuple
@@ -20,7 +18,7 @@ def set_theme():
         else "default"
     )
     plt.rcParams["font.family"] = "sans-serif"
-    plt.rcParams["figure.dpi"] = 110  # screen default; save_figure re-renders at 300
+    plt.rcParams["figure.dpi"] = 110  # save_figure re-renders at 300
 
 
 def save_figure(
@@ -37,10 +35,9 @@ def save_figure(
 def plot_count_distribution(
     y: pd.Series, bins: int = 15, title: str = "", xlabel: str = "count"
 ) -> Tuple[plt.Figure, plt.Axes, np.ndarray]:
-    """Histogram of a count response, with the mean marked.
+    """Histogram of a count response with the mean marked.
 
-    Returns the bin edges as well, so a fitted pmf can be overlaid on exactly the
-    same bins.
+    Also returns the bin edges, so a fitted pmf can be overlaid on the same bins.
     """
     fig, ax = plt.subplots(figsize=(7, 4))
     counts, edges, _ = ax.hist(
@@ -80,10 +77,7 @@ def overlay_expected(
 def plot_ci_comparison(
     table: pd.DataFrame, title: str = ""
 ) -> Tuple[plt.Figure, plt.Axes]:
-    """Horizontal interval plot comparing bootstrap methods on one statistic.
-
-    `table` is the output of `uncertainty.compare_bootstraps`.
-    """
+    """Interval plot comparing bootstrap methods. Takes `compare_bootstraps` output."""
     fig, ax = plt.subplots(figsize=(7, 2.4 + 0.5 * len(table)))
     for i, row in enumerate(table.itertuples()):
         ax.plot([row.ci_low, row.ci_high], [i, i], linewidth=3, color="#4C72B0")

@@ -76,13 +76,8 @@ def split_data(
     )
 
 
-# ---------------------------------------------------------------------------
-# Column contracts
-# ---------------------------------------------------------------------------
-# Transcribed from data_dictionary.md. These are what the notebooks assume.
-# A mismatch is not a crash to work around -- it is a finding to report
-# (CLAUDE.md: "a documented discrepancy is a finding we can report").
-
+# Column contracts transcribed from data_dictionary.md. A mismatch is a finding
+# to report, not a crash to work around.
 EXPECTED_COLUMNS = {
     "ghana_mis_sample.csv": [
         "cluster",
@@ -137,14 +132,10 @@ EXPECTED_COLUMNS = {
 
 
 def validate_schema(df: pd.DataFrame, dataset: str) -> pd.DataFrame:
-    """Check a loaded frame against the data-dictionary column contract.
+    """Check a frame against its data-dictionary column contract.
 
-    Reports columns the dictionary promises but the file lacks, and columns the
-    file carries that the dictionary does not describe. Prints nothing about the
-    contents of any row -- only names, dtypes and null counts (RULES.md 1).
-
-    Returns a per-column report; `.attrs["missing"]` and `.attrs["undocumented"]`
-    hold the two discrepancy lists.
+    Reports names, dtypes and null counts only, never row contents. The two
+    discrepancy lists are in `.attrs["missing"]` and `.attrs["undocumented"]`.
     """
     expected = EXPECTED_COLUMNS.get(dataset)
     if expected is None:
@@ -169,7 +160,7 @@ def validate_schema(df: pd.DataFrame, dataset: str) -> pd.DataFrame:
 
 
 def schema_summary(report: pd.DataFrame) -> str:
-    """One-paragraph verdict from validate_schema, safe to print or paste."""
+    """Printable verdict from validate_schema."""
     missing = report.attrs["missing"]
     undocumented = report.attrs["undocumented"]
     lines = [f"{report.attrs['dataset']}: {len(report)} columns."]
