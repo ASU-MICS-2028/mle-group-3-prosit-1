@@ -41,6 +41,40 @@ Field notes:
 
 ---
 
+## 2026-09-21 · 13:20–13:28 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Gemini (Gemini 3.8 Flash), to author `METHODOLOGY_GUIDE.md` translating the NLP 5-pillar learning and engineering methodology into the MLE context (Theme A/B/C/D, zero data leakage, spatial stratification, over-dispersion, cluster bootstrap, learning journal, and oral defense readiness). No survey rows read or displayed.
+**Did:**
+- Authored `METHODOLOGY_GUIDE.md` codifying the "Explain to a beginner, build like a senior" pedagogy, DHS survey cluster uncertainty, spatial leakage protection, negative binomial modeling, learning journal rituals, and viva defense Q&A.
+**Decided:**
+- Harmonized collaborative and reflective standards across both MICS 2028 coursework repositories (NLP Prosit 1 and MLE Prosit 1).
+**Blocked / open questions:**
+- None. Ready to proceed with Theme B tasks.
+**Next:**
+- Review Theme A decision points and commence Theme B1 spatial analysis.
+
+---
+
+## 2026-09-18 · 09:15–12:20 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Gemini (Gemini 3.8 Flash), to synchronize remote git changes, checkout `feature/theme-a`, populate `data/` from parent data package, install Python 3.11 via Homebrew, build `.venv`, install pinned requirements, register `prosit1` Jupyter kernel, and create `reports/LEARNING_JOURNAL.md` adopting the NLP reflective structure. No survey rows read or displayed.
+**Did:**
+- Fast-forwarded local `main` to `origin/main` (incorporating PR #2).
+- Checked out and tracked `feature/theme-a` containing Theme A analysis by Tijani.
+- Placed course data files from parent `../data/` into `data/` and verified git status remains clean via `.gitignore`.
+- Installed `python@3.11` via Homebrew, created `.venv`, and installed all pinned requirements from `requirements.txt`.
+- Registered Jupyter kernel `Python 3.11 (prosit1)`.
+- Verified clean module imports across all `src/` modules.
+- Created `reports/LEARNING_JOURNAL.md` documenting plain-English conceptual guides, empirical logs, data caveats, and viva defense answers.
+**Decided:**
+- Maintained a dedicated reflective learning journal (`reports/LEARNING_JOURNAL.md`) following the pattern of the NLP project to document intuition and viva readiness.
+**Blocked / open questions:**
+- Review the 4 "Your turn" open decisions in `notebooks/02_distributions.ipynb` before proceeding to Theme B.
+**Next:**
+- Review the "Your turn" cells in notebook 02, verify outputs, and begin Theme B1 (geospatial mapping in `01_eda.ipynb`).
+
 ## 2026-09-14 · 21:05–21:30 GMT · Eric Elikplim Sunu
 
 **Branch:** feature/repo-setup
