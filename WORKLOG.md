@@ -41,6 +41,30 @@ Field notes:
 
 ---
 
+## 2026-09-21 · 23:30–23:55 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Antigravity (Advanced Agentic Assistant), to complete Themes B, C, and D end-to-end: implement `notebooks/01_eda.ipynb`, `notebooks/03_pipeline_leakage.ipynb`, and `notebooks/04_allocation.ipynb`; add `compute_allocation` in `src/models.py` and `plot_allocation_comparison` in `src/viz.py`; author `reports/framing.md`, `reports/allocation.md`, `reports/leakage_audit.md`; update `reports/datasheet.md`, `reports/claims_table.md`, and `reports/LEARNING_JOURNAL.md`; run `black` and `ruff`; clear notebook outputs. Zero survey microdata rows displayed or committed.
+**Did:**
+- Authored and verified `notebooks/01_eda.ipynb` (Theme B1), generating `figures/b1_data_availability.png` (DHS cluster distribution) and `figures/b1_district_case_rate.png` (50 northern surveillance districts vs 210 un-surveyed districts). Verified Claim C-01 (unweighted net ownership 70.96% vs weighted 66.77%, delta 4.19 pp).
+- Authored and verified `notebooks/03_pipeline_leakage.ipynb` (Theme B2–B4), auditing preprocessing leakage (test RMSE deflated by 212 cases), target encoding catastrophe (fake R² = 1.0000), and spatial autocorrelation leakage (test RMSE underestimated by 45.5%: 47,646 vs 87,356). Fully updated `reports/leakage_audit.md`.
+- Added `compute_allocation` in `src/models.py` (implementing Hamilton integer apportionment for 50,000 nets based on Negative Binomial upper-bound risk and unmet coverage gap) and `plot_allocation_comparison` in `src/viz.py`.
+- Authored and verified `notebooks/04_allocation.ipynb` (Theme C), computing 50-district schedule and exporting `figures/c1_allocation_comparison.png`.
+- Authored `reports/framing.md` (decision architecture, evaluation metric, asymmetric minimax loss, operational constraints, and referral bias trade-offs).
+- Authored `reports/allocation.md` (complete 50-district allocation schedule, gainer/loser analysis: Tamale +1,692, Sagnarigu +1,012 vs Wa -1,516, Bolgatanga -665, sensitivity analysis, and NMEP rollout roadmap).
+- Updated `reports/datasheet.md` with complete analysis of all 6 known data issues and their mitigations.
+- Updated `reports/claims_table.md` (all claims C-01, C-02, C-02b, C-02c, C-03, C-04, C-05 verified).
+- Completed `reports/LEARNING_JOURNAL.md` with plain-English mental models, empirical results matrices, and comprehensive Viva exam defense scripts.
+- Cleared outputs across all 4 notebooks (`jupyter nbconvert --clear-output --inplace`).
+- Formatted and linted code with `black src/` and `ruff check src/` (0 errors).
+**Decided:**
+- Formalized equitable allocation formula using upper bound of Negative Binomial 95% CI scaled by $(1 - \text{coverage}/100)$ and apportioned via Hamilton's method.
+- Established Referral Hospital Bias defense to explain why Bolgatanga and Wa lose nets despite highest hospital case counts.
+**Blocked / open questions:**
+- None. Entire pipeline, technical reports, and viva preparation are complete.
+**Next:**
+- Merge feature branch into main, review slide deck, and rehearse oral defense.
+
 ## 2026-09-21 · 22:50–23:25 GMT · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a

@@ -96,3 +96,171 @@ def plot_ci_comparison(
     ax.set_title(title)
     ax.margins(x=0.18)
     return fig, ax
+
+
+def plot_district_choropleth(
+    adm0_path: Path,
+    adm1_path: Path,
+    adm2_path: Path,
+    case_df: pd.DataFrame,
+    value_col: str = "positive_per_100k",
+    title: str = "Malaria Surveillance Coverage & Case Rate across Ghana Districts",
+) -> Tuple[plt.Figure, plt.Axes]:
+    """Map Ghana's 260 districts, shading the 50 northern surveillance districts."""
+    import geopandas as gpd
+    import re
+
+    adm1 = gpd.read_file(adm1_path)
+    adm2 = gpd.read_file(adm2_path)
+
+    def norm(s):
+        s = re.sub(r"\b(Municipal|Metropolitan|District)\b", "", s, flags=re.I)
+        return re.sub(r"[^a-zA-Z]", "", s).lower()
+
+    aliases = {
+        "sagnarigu": "sagnerigu",
+        "gushiegu": "gushegu",
+        "tatalesangule": "tatalesanguli",
+        "kasenanankana": "kasenanankanaeast",
+    }
+
+    adm_norm_map = {norm(name): idx for idx, name in enumerate(adm2["adm2_name"])}
+
+    adm2_plot = adm2.copy()
+    adm2_plot[value_col] = np.nan
+
+    for _, row in case_df.iterrows():
+        k = norm(str(row["district"]))
+        k = aliases.get(k, k)
+        val = row[value_col]
+        if k in adm_norm_map:
+            adm2_plot.loc[adm_norm_map[k], value_col] = val
+        elif k == "garutempane":
+            for sub in ["garu", "tempane"]:
+                if sub in adm_norm_map:
+                    adm2_plot.loc[adm_norm_map[sub], value_col] = val
+        elif k == "savelugunanton":
+            for sub in ["savelugu", "nanton"]:
+                if sub in adm_norm_map:
+                    adm2_plot.loc[adm_norm_map[sub], value_col] = val
+        elif k == "bunkpuruguyunyoo":
+            for sub in ["bunkpurugunakpanduri", "yunyoonasuan"]:
+                if sub in adm_norm_map:
+                    adm2_plot.loc[adm_norm_map[sub], value_col] = val
+
+    fig, ax = plt.subplots(figsize=(8, 10))
+    adm2_plot[adm2_plot[value_col].isna()].plot(
+        ax=ax, color="#E8ECEF", edgecolor="#B0BEC5", linewidth=0.5
+    )
+    adm2_plot[adm2_plot[value_col].notna()].plot(
+        column=value_col,
+        ax=ax,
+        cmap="YlOrRd",
+        edgecolor="#37474F",
+        linewidth=0.8,
+        legend=True,
+        legend_kwds={
+            "label": "Cumulative Positives per 100k (2014–17)",
+            "orientation": "horizontal",
+            "shrink": 0.7,
+            "pad": 0.05,
+        },
+    )
+    adm1.boundary.plot(ax=ax, color="#263238", linewidth=1.2)
+    ax.set_title(title, fontsize=12, pad=15)
+    ax.set_axis_off()
+    return fig, ax
+
+
+def plot_region_choropleth(
+    adm1_path: Path,
+    region_stats: pd.DataFrame,
+    value_col: str = "n_clusters",
+    title: str = "National Survey Data Coverage: DHS Clusters per Region (2022)",
+) -> Tuple[plt.Figure, plt.Axes]:
+    """Map Ghana's 16 regions shaded by a regional survey metric."""
+    import geopandas as gpd
+    import re
+
+    adm1 = gpd.read_file(adm1_path)
+
+    def clean_reg(s):
+        s = re.sub(r"\(.*?\)", "", str(s))
+        s = re.sub(r"[^a-zA-Z]", "", s).lower()
+        if s == "northerneast":
+            s = "northeast"
+        return s
+
+    adm1["join_key"] = adm1["adm1_name"].apply(clean_reg)
+    region_stats["join_key"] = region_stats["region_name"].apply(clean_reg)
+
+    adm1_merged = adm1.merge(region_stats, on="join_key", how="left")
+
+    fig, ax = plt.subplots(figsize=(8, 10))
+    adm1_merged.plot(
+        column=value_col,
+        ax=ax,
+        cmap="Blues",
+        edgecolor="#263238",
+        linewidth=1.2,
+        legend=True,
+        legend_kwds={
+            "label": "DHS 2022 Survey Clusters Sampled per Region",
+            "orientation": "horizontal",
+            "shrink": 0.7,
+            "pad": 0.05,
+        },
+    )
+
+    for _, row in adm1_merged.iterrows():
+        pt = row["geometry"].representative_point()
+        val = int(row[value_col]) if pd.notna(row[value_col]) else 0
+        ax.text(
+            pt.x,
+            pt.y,
+            f"{row['adm1_name']}\n({val})",
+            fontsize=7,
+            ha="center",
+            va="center",
+            weight="bold",
+            color="#1A237E",
+        )
+
+    ax.set_title(title, fontsize=12, pad=15)
+    ax.set_axis_off()
+    return fig, ax
+
+
+def plot_allocation_comparison(
+    df: pd.DataFrame,
+    n_top: int = 5,
+    title: str = "ITN Policy Shift: Equitable (Need-Weighted) vs. Naive Allocation",
+) -> Tuple[plt.Figure, plt.Axes]:
+    """Horizontal bar plot showing top gainers and losers in ITN allocation."""
+    gainers = df.sort_values(by="delta", ascending=False).head(n_top)
+    losers = df.sort_values(by="delta", ascending=True).head(n_top)
+    subset = pd.concat([losers, gainers]).sort_values(by="delta")
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    colors = ["#C44E52" if d < 0 else "#4C72B0" for d in subset["delta"]]
+    bars = ax.barh(subset["district"], subset["delta"], color=colors, height=0.6)
+    ax.axvline(0, color="black", linestyle="--", linewidth=0.8, alpha=0.7)
+
+    for bar, delta in zip(bars, subset["delta"]):
+        offset = 35 if delta >= 0 else -35
+        ha = "left" if delta >= 0 else "right"
+        ax.annotate(
+            f"{delta:+d}",
+            xy=(delta, bar.get_y() + bar.get_height() / 2),
+            xytext=(offset, 0),
+            textcoords="offset points",
+            va="center",
+            ha=ha,
+            fontsize=9,
+            fontweight="bold",
+        )
+
+    ax.set_xlabel("Change in Net Allocation (Equitable - Naive)")
+    ax.set_title(title, fontsize=12, pad=12)
+    ax.margins(x=0.2)
+    return fig, ax
