@@ -60,8 +60,8 @@ Therefore, this project is **not just about training a machine learning model**.
 | **A1** | Is district case count over-dispersed? | Yes, massively. Variance is 77,000× higher than mean. | $\text{Var}/\text{Mean} = 77,204$ | `02_distributions.ipynb` (§A1) |
 | **A2** | Can a Poisson distribution model this? | No. Poisson predicts a standard deviation of 442, but observed SD is 122,882 (278× wider). | Pearson $\chi^2/\text{df} \approx 54,100$ | `02_distributions.ipynb` (§A2) |
 | **A3** | Does Negative Binomial solve this? | Yes. Adding the dispersion parameter $\alpha$ captures the long outbreak tail; dramatically superior AIC/BIC. | MLE $\alpha > 0$, AIC improvement massive | `02_distributions.ipynb` (§A3) |
-| **A4** | How misleading is a naive bootstrap CI? | Naive bootstrap produces an interval 1.8× too narrow. | Cluster CI width is 1.8× naive; $\text{DEFF} \approx 3.3$ | `02_distributions.ipynb` (§A4) |
-| **A4.1**| Does our survey weighting code work? | Yes. Our survey-weighted regional net ownership matches official DHS published report to 0.03%. | Diff $= 0.03\text{ percentage points}$ | `02_distributions.ipynb` (§A4) |
+| **A4** | How misleading is a naive bootstrap CI? | Naive household bootstrap produces an interval more than 2× too narrow for rural Northern Region. | Cluster CI width ($15.2\text{ pp}$) is $2.12\times$ naive ($7.2\text{ pp}$); $\text{DEFF} \approx 4.50$ | `02_distributions.ipynb` (§A4) |
+| **A4.1**| Does our survey weighting code work? | Yes. Our survey-weighted Northern Region net ownership matches official DHS published report to within 0.09 percentage points. | Estimate $67.69\%$ vs Published $67.60\%$ (Diff $= 0.09\text{ pp}$) | `02_distributions.ipynb` (§A4.1) |
 
 ---
 

@@ -41,6 +41,25 @@ Field notes:
 
 ---
 
+## 2026-09-21 · 22:50–23:25 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Gemini (Gemini 3.8 Flash), to resolve open judgment decisions in `notebooks/02_distributions.ipynb` (Theme A), implement Northern Region domain override, generate `figures/a4_bootstrap_ci_comparison.png`, clear notebook outputs, and update `reports/claims_table.md` and `reports/LEARNING_JOURNAL.md`. No survey rows read or displayed.
+**Did:**
+- Set notebook owner to Eric Elikplim Sunu in `notebooks/02_distributions.ipynb`.
+- Formulated plain-English and technical answer for Section A1 case-count distribution (cell `md12`), noting mass clustering between 40k-300k and right tail outliers (Bolgatanga, Wa).
+- Justified and applied manual override in Section A4 (cell `md30` & `cd31`), replacing programmatic Accra selection with Northern Region (`hv024 = 12`, 20 rural clusters, 582 households) to anchor 50 surveillance districts.
+- Formulated defensible claim for Section A4.1 (cell `md40`), establishing survey-weighted point estimate reproduction to within 0.09 percentage points of published DHS figure (67.69% vs 67.60%) while clarifying lack of published ITN CI.
+- Executed notebook end-to-end to generate `figures/a4_bootstrap_ci_comparison.png` (cluster CI 15.2 pp vs naive 7.2 pp, DEFF = 4.50).
+- Stripped notebook outputs cleanly via `jupyter nbconvert --clear-output`.
+- Updated `reports/claims_table.md` (claims C-02, C-02b, C-02c, C-03 verified) and `reports/LEARNING_JOURNAL.md`.
+**Decided:**
+- Locked Northern Region (`hv024 = 12`) as the canonical rural uncertainty domain for Prosit 1, connecting survey uncertainty directly with surveillance districts and capturing DEFF = 4.50.
+**Blocked / open questions:**
+- Ready to begin Theme B1 geospatial exploration in `notebooks/01_eda.ipynb`.
+**Next:**
+- Commit Theme A updates to `feature/theme-a`, push to remote, and start Theme B1 (district and regional geospatial mapping).
+
 ## 2026-09-21 · 13:20–13:28 GMT · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a
