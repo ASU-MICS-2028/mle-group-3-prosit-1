@@ -41,6 +41,23 @@ Field notes:
 
 ---
 
+## 2026-09-22 · 09:50–10:00 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Antigravity (Advanced Agentic Assistant), to integrate official Ashesi University Brand Guidelines (https://brand.ashesi.edu.gh/university/) into the presentation deck, update gitignore, push commits to remote, and open Pull Request #4.
+**Did:**
+- Extracted official Ashesi brand specifications: primary Pale Carmine (`#A83F43`), deep burgundy (`#5E1214`), warm academic gold (`#C59B27`), Garamond serif title typography, and Candara/Poppins body typography.
+- Downloaded official high-resolution Ashesi University logo assets (`figures/ashesi_logo.png`).
+- Redesigned `scripts/generate_deck.py` and regenerated `reports/ITN_Allocation_Presentation.pptx` with Ashesi executive title slide, gold accent lines, brand badges, and slide watermark headers.
+- Added `~$*` to `.gitignore` to prevent Office lock files from being tracked.
+- Pushed branch `feature/theme-a` to GitHub and opened Pull Request #4 (`https://github.com/ASU-MICS-2028/mle-group-3-prosit-1/pull/4`).
+**Decided:**
+- Applied official Ashesi Pale Carmine (`#A83F43`) and Garamond serif headers across all presentation slides.
+**Blocked / open questions:**
+- None.
+**Next:**
+- Team review on PR #4 and viva presentation rehearsal.
+
 ## 2026-09-21 · 23:30–23:55 GMT · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a
