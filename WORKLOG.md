@@ -41,6 +41,24 @@ Field notes:
 
 ---
 
+## 2026-09-22 · 09:45–14:05 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Claude (Claude Code, Opus 5), to independently verify the repo (re-run all four notebooks from clean kernels in an isolated copy, recompute every quoted number, stress-test the leakage and allocation claims), to build a corrected presentation deck on the official Ashesi Presentation Red template, and to split the learning journal into a group journal and my personal journal. It printed aggregates and derived district values only, never rows from `data/`.
+**Did:**
+- Confirmed reproducibility: 4/4 notebooks run from clean kernels, 9/9 figures regenerate byte-identical, all Theme A numbers reproduce, the 50-row allocation schedule reproduces, and git history holds no data files or notebook outputs.
+- Found errors to fix: within each region the allocation is population times a regional constant; the +0.082 coverage coefficient gives higher-coverage regions more nets per person; the 45.5% spatial-leak figure is seed luck (500 seeds; leave-one-region-out RMSE 365,128); R² 0.4905 does not reproduce (0.2618); depot totals should be 24,196 / 18,631 / 7,173; the `allocation.md` Total row should read 4,788,809 people and 9,781,981 cases; no cell produces 60.1%; 11 region-12 districts are now in Savannah or North East; the `c2` map legend says positives per 100k but shows nets. Full list in the group journal, section 4.
+- Web check by a Claude sub-agent (web only): Ghana allocates ITNs by population (about one net per two people, IRS districts excluded); Tamale Teaching Hospital is the only tertiary hospital in the north; the Greater Accra 49% vs 2% opener needs rewording. The raw workbook's IRS/SMC columns (32 and 24 of 50 districts) were dropped from the curated file.
+- Built a 15-slide deck on the Ashesi Presentation Red template with corrected numbers, the audit findings and speaker notes citing a source for every number. Kept outside the repo until the verification-run numbers are in notebooks 03 and 04.
+- Split the learning journal: `reports/LEARNING_JOURNAL.md` is now the group journal (quotable numbers with sources, retired claims, lessons, panel practice, a personal-journal template); my personal journal moved to `reports/journals/eric_sunu.md`, corrected, with reflection prompts I still have to answer in my own words. Updated `METHODOLOGY_GUIDE.md` Pillar 2 to match.
+**Decided:**
+- The group journal lives at `reports/LEARNING_JOURNAL.md`; personal journals live in `reports/journals/<name>.md`.
+**Blocked / open questions:**
+- The team needs to decide the allocation rule before the slides are final.
+- The reports and the committed deck still carry the retired numbers listed in the group journal, section 4.
+**Next:**
+- Move the verification-run numbers into notebooks 03 and 04, correct the reports, then decide whether the new deck replaces `reports/ITN_Allocation_Presentation.pptx`.
+
 ## 2026-09-22 · 09:50–10:00 GMT · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a

@@ -49,9 +49,9 @@ flowchart TD
 
 ---
 
-### Pillar 2: The Learning Journal (`reports/LEARNING_JOURNAL.md`)
+### Pillar 2: The Learning Journals (`reports/LEARNING_JOURNAL.md` and `reports/journals/`)
 
-The Learning Journal is your **personal knowledge vault and oral exam revision guide**. It bridges raw code and deep conceptual mastery.
+There are two kinds of journal. The **group journal** (`reports/LEARNING_JOURNAL.md`) is the shared knowledge base and revision guide: concepts, the numbers we can quote with their sources, the claims we have retired, and panel practice. Each member also keeps a **personal journal** in `reports/journals/<your-name>.md`, written in their own words; it feeds the individual reflection and AI-use declaration. A template is at the end of the group journal.
 
 #### What Goes Into the Journal:
 1. **The Mental Model / Plain-English Analogy:**
@@ -127,6 +127,6 @@ When defending in front of the examination panel:
 - [ ] Am I on my feature branch (`git status` shows `On branch feature/...`)?
 - [ ] Did I ensure NO raw data rows or `data/` files are staged or printed?
 - [ ] Is every model split-first and wrapped in a scikit-learn Pipeline?
-- [ ] Did I log the exact results, tables, and plain-English takeaways in `reports/LEARNING_JOURNAL.md`?
+- [ ] Did I update the group journal (`reports/LEARNING_JOURNAL.md`) and my own journal in `reports/journals/`?
 - [ ] Did I record my time, assistant attribution, Did/Decided/Blocked/Next in `WORKLOG.md`?
 - [ ] Did I commit my changes with a clean conventional commit message?

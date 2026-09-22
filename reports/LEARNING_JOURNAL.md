@@ -1,154 +1,226 @@
-# Individual Reflective Learning Journal — Machine Learning Essentials (ICS553)
+# Group learning journal: Prosit 1
 
-**Student Name**: Eric Elikplim Sunu  
-**Degree**: Master's in Intelligent Computing Systems (MICS 2028)  
-**Course**: ICS553 Machine Learning Essentials · Ashesi University  
-**Project**: Prosit 1 — Data-Driven Resource Allocation of Insecticide-Treated Nets (ITNs) in Ghana  
-**Group**: Group 3  
-**Repository**: `https://github.com/ASU-MICS-2028/mle-group-3-prosit-1.git`  
-**Evaluation Role**: Statistician & Lead Analyst
+ICS553 Machine Learning Essentials · MICS 2028 · Group 3 · Allocating insecticide-treated
+nets (ITNs) in Ghana
 
----
+For every member of the group. It explains the ideas behind our analysis in plain
+language, lists the numbers we can quote and the ones we must stop using, records what went
+wrong and how it was found, and helps with the panel and Quiz 1.
 
-## 1. Problem Formulation & Mental Models: The "Big Picture"
-
-### 1.1 What Are We Actually Solving?
-Imagine you are given a delivery van filled with a limited shipment of mosquito bed nets (exactly 50,000 nets). You are tasked with distributing them across the 50 administrative districts of northern Ghana (Northern, Upper East, and Upper West regions).
-
-If you follow the "obvious" conventional approach of giving the most nets to districts reporting the highest raw counts of malaria cases, you fall into three catastrophic epidemiological traps:
-1. **The "Clinic Access" Trap**: A wealthy district with multiple district hospitals and labs will record huge case counts simply because patients have doctors to test them. A poor, remote rural district with zero clinics will record almost zero cases because *nobody was ever tested*. Allocating by raw cases rewards clinic infrastructure and starves the most neglected communities!
-2. **The "Referral Hospital" Distortion**: Tertiary hospitals like Bolgatanga Regional Hospital and Wa Regional Hospital treat patients arriving from dozens of surrounding rural districts. Recording those cases at the hospital's municipal address makes the hospital district look like an isolated epicentre, even though the true infections occurred in rural farming villages 50 kilometres away.
-3. **The "Already Protected" Satiation Trap**: If a district reports 10,000 cases, but 85% of its families already sleep under treated nets, pouring more nets into that district produces diminishing marginal health returns. Nets must target **unmet epidemiological need** (high transmission risk $\times$ large population $\times$ low baseline net coverage).
-4. **The "False Confidence" Trap**: A survey that samples only a few rural clusters carries wide statistical uncertainty. Making policy based solely on point estimates ignores the real risk of epidemic outbreaks in under-surveyed zones.
-
-Therefore, this project is **not merely about fitting a machine learning model**. It is an **evidence-based, uncertainty-aware resource allocation policy** built to withstand rigorous academic and public health scrutiny.
+- Keep it current: replace a stale section rather than adding one that contradicts it.
+- Personal journals go in `reports/journals/<your-name>.md`; a template is in section 8.
+- Last updated 2026-09-22, after every notebook was re-run from a clean kernel and each
+  number below was checked against the output.
 
 ---
 
-## 2. Plain-English Concept Guide: Demystifying the Statistics
+## 1. The project in one paragraph
 
-### Concept 1: What is "Over-Dispersion" and Why Does Poisson Crash?
-- **What Poisson assumes**: A Poisson distribution mathematically assumes that the **Mean** (average) and the **Variance** (spread) are identical:
-  $$\text{Variance} = \text{Mean}$$
-- **What happens in our northern Ghana malaria data**:
-  In our 50 districts, the average case count is around 195,624 cases, but the variance is an astronomical **15,098,800,000**!
-  $$\frac{\text{Variance}}{\text{Mean}} \approx 77,183$$
-- **The Physical Analogy (The Pencil Hoarder)**: Imagine a classroom where the teacher calculates that the average child has 2 pencils. If pencil ownership follows a Poisson distribution, nearly every kid has 1, 2, or 3 pencils. It is mathematically impossible for anyone to have 100 pencils. But in reality, 90 children have 0 pencils, and 1 child has a backpack with 200 pencils! The variance is massive.
-- **Why Poisson fails in healthcare**: Because Poisson has only *one parameter* ($\lambda = \text{mean}$), it forces all districts to cluster tightly around the average. It assumes severe outbreak districts (the "heavy tail") have a probability of practically zero ($p < 10^{-100}$). If public health planners use Poisson, they severely underestimate epidemic risks.
-- **The Solution (Negative Binomial)**: Negative Binomial includes a second parameter—the dispersion knob ($\alpha$). It allows the variance to expand quadratically:
-  $$\text{Var}(Y) = \mu + \alpha \mu^2$$
-  With estimated $\alpha = 0.2677$, it accommodates large localized outbreaks while beating Poisson by over **2.39 million AIC points**.
+Ghana's malaria programme has a limited delivery of insecticide-treated nets. We advise
+where 50,000 of them should go across the 50 districts of the three northern regions (as
+they were in 2014-17), and how confident we can be. We have two sources: routine
+surveillance (confirmed cases for those 50 districts, 2014-17) and the 2022 DHS household
+survey (17,933 households in 618 clusters across all 16 regions, but no district
+identifier). Case counts are over-dispersed, so we model them with a negative binomial;
+survey intervals must respect the cluster design; and every step must be free of leakage.
+Our current rule allocates within each region by population, with regional totals from the
+model.
 
 ---
 
-### Concept 2: What is "Two-Stage Cluster Sampling" vs "Naive Bootstrap"?
-- **How DHS collects data**: The Demographic and Health Survey (DHS) does not drop 17,933 random surveyors across Ghana. That would be logistically impossible. Instead, they use **two-stage cluster sampling**:
-  1. Pick 618 primary sampling units / villages (clusters) across 16 regions.
-  2. Interview 25–30 households inside each chosen village.
-- **The Catch**: Families in the same village share the same river, the same rainfall, and the same housing conditions. Their malaria exposure is correlated (intra-cluster correlation $\rho > 0$).
-- **The Naive Mistake**: A standard "naive" bootstrap dumps all 17,933 households into a single bucket and samples them randomly with replacement. It pretends each household represents completely independent information.
-- **The Dangerous Consequence**: It produces a confidence interval that is **$2.12\times$ too narrow** ($\text{DEFF} \approx 4.50$), inventing fake statistical precision.
-- **The Honest Fix (Two-Stage Cluster Bootstrap)**: Resample entire *clusters* (villages) first with replacement, and then resample households within those selected clusters. This honestly mirrors the survey's true design variance.
+## 2. Key ideas in plain English
+
+**Over-dispersion.** A Poisson model forces the variance to equal the mean. Our district
+counts have a variance 77,183 times the mean, and even after adjusting for population the
+Poisson dispersion ratio is 54,147 (it should be about 1). The negative binomial adds one
+dispersion parameter (α = 0.268 with a population offset) and fits far better, so it is our
+working model. The a3 figure shows α = 0.395 because it fits without covariates.
+
+**Cluster sampling.** The DHS picks clusters, then households, and households in a cluster
+are alike. Resampling households as if independent makes intervals too narrow: for rural
+Northern net ownership the naive interval is 7.2 points wide and the cluster bootstrap
+15.2, a design effect of about 4.5. A design-based calculation agrees (about 4.2).
+
+**Weights.** Some areas were oversampled on purpose, so unweighted averages mislead:
+national net ownership is 70.96% unweighted but 66.77% weighted. That gap is about
+selection probabilities, not a design effect.
+
+**Leakage.** Nothing fitted on test data may shape training.
+- Preprocessing: fitting a scaler before splitting is a real leak, but its effect here is
+  negligible.
+- Target encoding: encoding each district by its own case count makes the feature the
+  answer (test R² 1.00 against 0.26).
+- Spatial: stratifying a split by region keeps every region in training, which is good for
+  representation, but neighbours still sit on both sides of the split. Only holding out a
+  whole region tests new geography, and it raises the error about four times.
+- Temporal: coverage from 2022 cannot explain cases from 2014-17 causally.
+
+**Confidence vs prediction intervals.** A confidence interval for the mean covers the
+average count for districts like this one; a prediction interval covers one district's
+actual count and is much wider. Our allocation uses the confidence interval for the mean.
+
+**Confounding.** More nets go where malaria is worst, so coverage and cases rise together
+across regions: our coverage coefficient is +0.082 per point. That is a region effect, not
+evidence that nets increase malaria.
+
+**What our allocation rule does.** Weight = upper confidence bound of expected cases × (1 -
+coverage), turned into exactly 50,000 nets by Hamilton's largest-remainder method. Because
+coverage is one number per region, the rule gives every district in a region the same nets
+per person: 8.5 per 1,000 in Northern, 16.0 in Upper East, 9.2 in Upper West. That is close
+to Ghana's own practice of allocating nets by population. The split between regions depends
+on the model.
 
 ---
 
-### Concept 3: What is "Data Leakage" and How Did We Audit It?
-Data leakage occurs when information from outside the training dataset contaminates model training, creating artificially inflated performance metrics that fail in production. We audited three distinct forms of leakage in `reports/leakage_audit.md`:
+## 3. Numbers you can quote
 
+Rows marked *verification run* were computed on 2026-09-22 by re-running the analysis; they
+still need to be added to notebooks 03 and 04 before we quote them to the panel.
+
+| Claim | Number | Source |
+|---|---|---|
+| District counts are over-dispersed | Variance/mean 77,183 | nb02 cd09 |
+| A Poisson is far too narrow | SD 442 vs 122,882 (278 times) | nb02 cd15 |
+| Over-dispersion survives the population offset | Pearson χ²/df 54,147 | nb02 cd25 |
+| The negative binomial fits better | α = 0.2677; AIC gap 2,393,669 | nb02 cd25, cd26 |
+| Weighting matters | 70.96% unweighted vs 66.77% weighted | nb01 eda_cd05 |
+| The cluster design widens intervals | 15.20 vs 7.17 points (2.12 times); DEFF 4.50 at seed 42 | nb02 cd34 |
+| The design effect is stable | 4.46 to 5.39 over 20 seeds; 4.18 design-based | verification run |
+| Our weighting reproduces the DHS | 67.69% vs 67.6% published (0.09 points) | nb02 cd39 |
+| Target encoding leaks | Test R² 1.0000 vs 0.2618 | nb03 leak_cd06 |
+| Holding out a region | RMSE 365,128, about four times a random or stratified split | verification run |
+| Allocation by region | Northern 24,196, Upper East 18,631, Upper West 7,173 | nb04; `reports/allocation.md` table |
+| Nets per 1,000 people | 8.5 / 16.0 / 9.2 | verification run |
+| The regional split is model-dependent | A region-effects model moves 7,720 nets | verification run |
+| Coverage data error matters | Correcting 11 districts' coverage moves 3,740 nets | verification run |
+
+---
+
+## 4. Numbers and claims to stop using
+
+These appear in our reports or the old deck but are wrong, not reproducible, or
+overstated.
+
+| Stop saying | Say instead | Why |
+|---|---|---|
+| Honest test R² 0.49 | 0.26 | 0.49 does not reproduce from the notebook |
+| Random splits understate error by 45.5% | Holding out a region raises error about four times; random and stratified splits agree | 45.5% came from one random seed |
+| Region-stratified splits prevent spatial leakage | Stratifying ensures representation; holding out regions tests new geography | Neighbours stay on both sides of a stratified split |
+| Preprocessing leakage deflates error by 212 cases | The mechanism is real; here the effect is negligible (43 cases on average over 500 seeds) | 212 was one seed |
+| Upper bound of the 95% prediction interval | Upper bound of the 95% confidence interval for the mean | That is what the code computes |
+| Depot totals 24,980 / 17,547 / 7,473 | 24,196 / 18,631 / 7,173 | Sums of our own schedule |
+| Schedule total 5,263,334 people, 9,781,209 cases | 4,788,809 and 9,781,981 | Column sums of `reports/allocation.md` |
+| The interval extends down to 60.1% | The all-Northern cluster interval is 61.4% to 74.0% | No cell produces 60.1% |
+| Lower Northern coverage justifies more nets for Northern | Under our model it gives Northern fewer nets | The coverage coefficient is positive |
+| Wa and Bolgatanga have about 80% coverage | Upper East 79.6%, Upper West 69.8% (regional averages) | Coverage is regional |
+| Referral hospitals inflate Wa and Bolgatanga | This is a hypothesis; our data do not show it | Bolgatanga is 4th of 13 in its region on cases per person |
+| Bolgatanga and Wa host tertiary hospitals | They host regional (secondary) hospitals; Tamale Teaching Hospital is the only tertiary hospital in the north (web) | Ghana's health-system tiers |
+| Case-proportional allocation is the status quo | Ghana allocates ITNs by population, about one net per two people (web) | National malaria strategy |
+| Rural Northern is the most under-sampled region | It was chosen for its link to our districts; it ranks 10th of 16 by rural clusters | nb02 cd29 |
+| The weighting gap is a design effect | It comes from unequal selection probabilities | A design effect is a variance ratio |
+| 1.8 times wider, DEFF 3.3, 0.03 points | 2.12 times, DEFF 4.50, 0.09 points | The old numbers are from the Greater Accra domain; the README, the methodology guide and `reports/theme_a_guide.pdf` still show them |
+
+(web): from a web check on 2026-09-22 (Tamale Teaching Hospital's own site; the Ghana
+Service Provision Assessment 2002; the PMI Ghana Malaria Operational Plan FY2017). Open the
+source before quoting it.
+
+---
+
+## 5. Data caveats
+
+- The survey has no parasitaemia column and no district identifier; it resolves only to
+  region and cluster.
+- The published ITN confidence intervals are empty (0 of 76 rows).
+- `net_coverage_pct` is one value per region (67.69, 79.56, 69.76) and measured in 2022,
+  five to eight years after the cases.
+- 11 districts coded as Northern are now in Savannah (6) or North East (5), where 2022
+  coverage is 79.1% and 62.8%, not 67.7%.
+- The raw surveillance workbook records indoor spraying (IRS) and seasonal chemoprevention
+  (SMC) by district and month; the curated file dropped them. 32 of 50 districts had
+  spraying and 24 had chemoprevention in 2014-17.
+- 39 of 50 districts report more than one confirmed case per resident over 2014-17, which
+  suggests repeat episodes, care-seeking across districts or undercounted populations.
+- 207 of today's 260 districts have no surveillance data in our package.
+
+---
+
+## 6. Lessons for the rest of the course
+
+1. One random seed is an anecdote. Report the spread over seeds before calling a difference
+   real.
+2. Every number in prose should be printed by a cell. Hand-typed numbers drifted in this
+   project (the R², the depot totals, the 60.1%).
+3. Stratify to keep every group in training; hold groups out to test generalisation. They
+   answer different questions.
+4. Check a coefficient's sign before building on it. A positive coverage coefficient was
+   the warning sign here.
+5. An explanation written after seeing a result is a hypothesis. Show the evidence for and
+   against it.
+6. Check the vintage of codes and boundaries. Ghana's regions changed in 2019; our district
+   file did not.
+7. Do not drop columns silently. The spraying and chemoprevention status was in the raw
+   workbook all along.
+8. Re-run from a clean kernel before quoting anything, and update the claims table in the
+   same commit.
+
+---
+
+## 7. Panel and Quiz 1 practice
+
+**Why a negative binomial and not a Poisson?** The variance is 77,183 times the mean, and
+the dispersion ratio is still 54,147 after a population offset; a Poisson cannot fit that.
+The negative binomial adds one dispersion parameter.
+
+**Why resample clusters, not households?** Households in a cluster are alike, so treating
+them as independent overstates what we know. The cluster interval is 2.12 times wider.
+
+**What does a design effect of 4.5 mean?** The survey carries the information of a simple
+random sample about a quarter its size.
+
+**What does the 0.09-point match with the DHS validate?** Our weighting and coding, not our
+interval: the published ITN intervals are empty.
+
+**Does stratifying by region stop spatial leakage?** No. It keeps each region represented,
+but only holding out a whole region tests new geography.
+
+**Why does Tamale gain the most nets?** It is the most populous district, and within a
+region the rule treats everyone as equally at risk, even though Tamale reports the fewest
+cases per person.
+
+**Why do Bolgatanga and Wa lose nets?** The rule moves nets towards Northern Region overall,
+and both districts report more cases per person than their regional averages. Referral bias
+is a possible extra reason, not a finding.
+
+**What is the weakest part of the analysis?** The split between regions: coverage is one
+2022 number per region, its coefficient is confounded, and a better-fitting model moves
+7,720 nets.
+
+**How do you get exactly 50,000 nets?** Hamilton's largest-remainder method: whole-number
+parts first, then the leftovers to the largest remainders.
+
+**What would you do with more time?** Use today's regions and district-level spraying and
+chemoprevention, model risk with region effects, validate by holding out regions, and
+borrow strength across neighbouring districts with a small-area model.
+
+---
+
+## 8. Template for your personal journal
+
+Copy this into `reports/journals/<your-name>.md` and write it in your own words; it feeds
+your individual reflection and AI-use declaration.
+
+```markdown
+# Learning journal: <your name>
+
+Role: <seat and PBL role> · Last updated: <date>
+
+## What I worked on
+
+## Concepts I can now explain in my own words
+
+## One thing that went wrong, and how it was found
+
+## How I used AI assistants, and what I checked (for my declaration)
+
+## Questions I still have
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│ 1. Preprocessing Leakage:                                               │
-│    Fitting scalers/imputers on full data before splitting.              │
-│    -> Deflates test RMSE by 212 cases (from 87,356 down to 87,144).     │
-├─────────────────────────────────────────────────────────────────────────┤
-│ 2. Target Encoding Catastrophe:                                         │
-│    Encoding high-cardinality district categories using target means     │
-│    without out-of-fold regularization.                                  │
-│    -> Model memorizes training targets, faking R² = 1.0000 (honest 0.49)│
-├─────────────────────────────────────────────────────────────────────────┤
-│ 3. Spatial Autocorrelation Leakage:                                     │
-│    Using naive random 80/20 train/test splits on geographical data.     │
-│    -> Test districts sit adjacent to identical training districts.      │
-│    -> Test error drops by 45.5% (from 87,356 down to 47,646) due to     │
-│       geographic peeking, creating false confidence.                    │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-### Concept 4: The Allocation Policy Shift (Naive vs Equitable)
-- **The Naive Formula**: Distributes nets strictly by historical case counts ($50,000 \times \frac{\text{cases}_i}{\sum \text{cases}}$).
-- **The Equitable Formula**: Distributes nets by **unmet need**:
-  $$\text{Need}_i = \hat{\mu}_{i,\text{upper}} \times \left(1 - \frac{\text{coverage}_i}{100}\right)$$
-  using **Hamilton's largest remainder apportionment** to ensure exactly 50,000 integer nets.
-- **The Major Policy Shifts**:
-  - **Tamale (+1,692 nets) & Sagnarigu (+1,012 nets)**: High population centers with lower baseline coverage (~67.7%) gain substantially, closing massive population-level vulnerability gaps.
-  - **Wa (-1,516 nets) & Bolgatanga (-665 nets)**: Urban tertiary hospital hubs lose nets. Their raw case counts reflect patients travelling from rural districts, while their local populations already have high coverage (~70–80%).
-
----
-
-## 3. Empirical Results Log (Themes A, B, C)
-
-| Theme & Task | Statistical Test / Research Question | Plain-English Finding | Exact Empirical Metric | Notebook & Report Citation |
-|---|---|---|---|---|
-| **A1** | Is district case count over-dispersed? | Yes, massively. Variance exceeds mean by 77,000×. | $\text{Var}/\text{Mean} = 77,183$ | `02_distributions.ipynb` (§A1) |
-| **A2** | Can a Poisson distribution model this? | No. Poisson assumes SD of 442, but real SD is 122,882. | Pearson $\chi^2/\text{df} = 54,147$ | `02_distributions.ipynb` (§A2) |
-| **A3** | Does Negative Binomial solve over-dispersion? | Yes. Dispersion $\alpha$ captures the heavy tail; massive AIC improvement. | $\Delta\text{AIC} = 2,393,669$, $\alpha = 0.2677$ | `02_distributions.ipynb` (§A3) |
-| **A4** | How misleading is a naive household bootstrap? | Naive bootstrap produces an interval more than $2\times$ too narrow. | Cluster CI width ($15.20\text{ pp}$) vs Naive ($7.17\text{ pp}$); $\text{DEFF} \approx 4.50$ | `02_distributions.ipynb` (§A4) |
-| **A4.1**| Does our survey weighting reproduce official benchmarks? | Yes. Survey-weighted Northern net ownership matches official DHS report to 0.09pp. | Estimated $67.69\%$ vs Published $67.60\%$ | `02_distributions.ipynb` (§A4.1) |
-| **B1** | What is the survey design effect on national net ownership? | Unweighted ownership overstates weighted ownership by 4.19 pp. | Unweighted $70.96\%$ vs Weighted $66.77\%$ | `01_eda.ipynb` [C-01] |
-| **B2** | Does global preprocessing leak test information? | Yes. Imputing/scaling on full data deflates test RMSE by 212 cases. | Leaky RMSE $87,144$ vs Honest $87,356$ | `reports/leakage_audit.md` |
-| **B3** | What happens under unregularized target encoding? | Total target memorization. Yields fraudulent perfect fit. | Fake $R^2 = 1.0000$ vs Honest $R^2 = 0.4905$ | `reports/leakage_audit.md` |
-| **B4** | What is the impact of spatial autocorrelation on train/test splits? | Random split underestimates true generalization error by $45.5\%$. | Random Split RMSE $47,646$ vs Region Stratified $87,356$ | `reports/leakage_audit.md` |
-| **C1** | How does equitable allocation shift resources? | Reallocates nets from hospital hubs to rural/peri-urban populations. | Tamale $+1,692$; Wa $-1,516$; exactly 50,000 nets allocated | `04_allocation.ipynb` & `reports/allocation.md` |
-
----
-
-## 4. Problems Encountered & Real-World Data Caveats
-
-| # | Anomaly / Caveat | Root Cause | Defensible Methodological Handling |
-|---|---|---|---|
-| 1 | **Missing Parasitaemia & District Identifiers in Household Microdata** | DHS microdata is de-identified for privacy; resolves only to region (`hv024`) and cluster. | Reframed Task A4 to evaluate net ownership in rural Northern Region rather than district prevalence. |
-| 2 | **Empty Published ITN Confidence Intervals** | DHS reference summary table `ghana_region_malaria.csv` has empty strings for net CI columns. | Verified survey weighting against published point estimate ($0.09\text{ pp}$ match); documented empty published intervals as an upstream data gap. |
-| 3 | **Region Collinearity of Net Coverage** | District surveillance file contains only 3 distinct regional coverage values for 50 districts. | Used `check_design_matrix()` to reject simultaneous inclusion of region dummies; documented that coefficient captures macro-region effect. |
-| 4 | **Zero-Variance Surveillance Columns** | `months_reported` (48) is constant across all 50 districts. | Excluded from regression pipelines; refocused reporting gap analysis on spatial boundaries. |
-| 5 | **Administrative Boundary Splits Post-2018** | 7 northern districts (e.g. Garu-Tempane, Savelugu-Nanton) were split into new administrative units in 2018. | Built explicit aliasing and polygon-aggregation dictionary in `src/viz.py` to map all 50 districts seamlessly. |
-| 6 | **Temporal Mismatch Between Datasets** | Routine clinic cases are from 2014–2017, while household survey coverage reflects 2022. | Explicitly defended as an associative planning proxy rather than a lagged causal mechanism. |
-
----
-
-## 5. Comprehensive Viva Exam Defense Bank ("The Grill-Me Cheat Sheet")
-
-### Q1: "Why did you use Negative Binomial regression instead of ordinary least squares (OLS) or Poisson?"
-> **Oral Defense Script:**  
-> *"OLS assumes continuous errors that can take negative values, but clinical malaria counts are strictly non-negative integers. Poisson regression is designed for counts, but it enforces the equidispersion assumption—that variance equals the mean. In northern Ghana, the variance of district case counts is 77,183 times larger than the mean. A fitted Poisson model predicts a standard deviation of 442 against an observed standard deviation of 122,882—it is 278 times too narrow! This catastrophic failure survives even after controlling for population size ($\chi^2/\text{df} \approx 54,147$). Negative Binomial introduces a dispersion parameter $\alpha$ that allows variance to scale quadratically ($\text{Var} = \mu + \alpha \mu^2$), reducing AIC by over 2.39 million points and honestly modeling extreme epidemic surges."*
-
----
-
-### Q2: "Why is a standard bootstrap invalid for DHS survey data?"
-> **Oral Defense Script:**  
-> *"The DHS does not take a simple random sample of independent households; they use a two-stage stratified cluster sampling design. Households living within the same census cluster share the same physical ecology, standing water, and socioeconomic status. A naive bootstrap samples households independently, ignoring this intra-cluster correlation. In rural Northern Region, a naive bootstrap yields a net ownership CI of 7.17 percentage points, whereas our design-consistent two-stage cluster bootstrap yields an interval of 15.20 percentage points—more than 2.1 times wider ($\text{DEFF} \approx 4.50$). Using a naive bootstrap would give the Ministry dangerous false precision."*
-
----
-
-### Q3: "Explain what data leakage occurred in your pipeline audit and how you prevented it."
-> **Oral Defense Script:**  
-> *"We audited three distinct leakage vectors. First, preprocessing leakage: fitting imputers or scalers on the full dataset before splitting leaks test set distributions into the training phase, artificially lowering test RMSE by 212 cases. We prevented this structurally using scikit-learn's `Pipeline` and `ColumnTransformer`. Second, target encoding leakage: replacing categorical districts with unregularized target averages allows the model to memorize the training labels, generating a fraudulent $R^2 = 1.0000$. We rejected target encoding. Third, spatial leakage: a standard random train/test split allows adjacent, geographically correlated districts into both sets, deflating generalization error by $45.5\%$ ($47,646$ vs $87,356$). We enforced region-stratified holdouts to evaluate true spatial transferability."*
-
----
-
-### Q4: "Why did you cut over 2,100 nets from Bolgatanga and Wa when their hospitals reported the most cases in the country?"
-> **Oral Defense Script:**  
-> *"Allocating nets by raw hospital cases falls victim to the Referral Hospital Bias. Bolgatanga Regional Hospital and Wa Regional Hospital serve as tertiary referral centers for entire regions. When a patient from rural Nabdam or Lambussie travels to Bolgatanga for treatment, the health record logs that case in Bolgatanga, not in the rural community where transmission occurred. Furthermore, DHS survey data shows that Upper East and Upper West already have baseline net ownership between 70% and 80%. Pouring thousands of additional nets into these urban referral centers produces diminishing marginal returns. Our equitable model redirects these nets to high-population, underserved rural and peri-urban districts like Tamale ($+1,692$) and Sagnarigu ($+1,012$), closing true community transmission gaps."*
-
----
-
-### Q5: "How does your allocation ensure that exactly 50,000 nets are delivered without fractions?"
-> **Oral Defense Script:**  
-> *"We implemented Hamilton's Largest Remainder Method, the standard mathematical apportionment algorithm used in constitutional seat allocation. Each district receives its floor integer quota of nets ($\lfloor q_i \rfloor$), and the remaining unallocated nets are distributed one-by-one to districts with the largest fractional remainders. This guarantees that exactly 50,000 nets are distributed, no district receives negative nets, and zero rounding discrepancies occur."*
-
----
-
-### Q6: "If the Ministry's budget is cut by 50% to 25,000 nets, does your model break?"
-> **Oral Defense Script:**  
-> *"No. Because our allocation index $W_i$ represents normalized relative epidemiological need, Hamilton's apportionment scales linearly. The priority ranking of districts is invariant to budget scaling. The top-priority districts remain identical whether the consignment is 25,000 or 100,000 nets."*
