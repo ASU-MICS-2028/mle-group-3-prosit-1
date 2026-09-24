@@ -41,7 +41,7 @@ Field notes:
 
 ---
 
-## 2026-09-25 · 00:00–23:58 GMT · Eric Elikplim Sunu
+## 2026-09-24 · 23:46–23:59 GMT (start approximate) · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a
 **Assistant:** Claude (Claude Code, Opus 5.5), to read the case brief and lecture 01 that Eric added to the Machine Learning folder, to check the deck and the two prep pages against the brief's rubric, and to write slide 9's rule as math (a teammate's suggestion). It read code, reports and aggregates only, never rows from `data/`.
