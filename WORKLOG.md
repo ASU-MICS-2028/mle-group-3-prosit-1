@@ -41,6 +41,24 @@ Field notes:
 
 ---
 
+## 2026-09-24 · 09:20–10:05 GMT (start approximate) · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Claude (Claude Code, Opus 5.5), to fix what the 22 September verification found: move the verification checks into the notebooks, correct the reports, and bring the deck builder and verification script into the repo. It printed aggregates and derived district values only, never rows from `data/`.
+**Did:**
+- `src/io.py`: `split_data(..., hold_out=region)` holds out a whole region (still the one split function); `REGION_2019` lists the 11 districts now in Savannah or North East. `src/models.py`: Hamilton apportionment extracted into `hamilton()` (allocation unchanged, all 50 rows re-checked) and an `allocate()` helper. `src/viz.py`: the map legend label is a parameter, and the policy-shift map's labels are computed without the "(Referral Hospital)" tags.
+- Notebook 03: 500-seed comparison (leak_cd12) and whole-region hold-out (leak_cd14), with disciplined splits through `io.split_data`; the audit table is now computed (leak_cd10). Notebook 04: shell-corrupted markdown repaired, readable cell ids, kernelspec set, wrong claims corrected, regional totals printed (alloc_cd07), new cells for what the rule does (alloc_cd11) and sensitivity (alloc_cd13). All four notebooks re-run from clean kernels; every new number matches the verification run; figures unchanged except c2 (legend) and c3 (labels).
+- Corrected `reports/claims_table.md` (every deck number now has a row), `leakage_audit.md`, `allocation.md` (Total row, depot totals, confidence not prediction interval, the real sensitivity table), `framing.md`, `datasheet.md` (field names, issues 7 to 9), `README.md`, `METHODOLOGY_GUIDE.md`, and the journals' sources.
+- `CLAUDE.md`: the spatial-split rule now says to stratify for representation and hold out whole regions to test new geography (its own commit, easy to revert).
+- Added `scripts/verify_claims.py`, `scripts/build_ashesi_deck.py` and the Ashesi Presentation Red template; rebuilt `reports/ITN_Allocation_Ashesi.pptx`, whose speaker notes now cite notebook cells.
+**Decided:**
+- Correct facts, keep policy: the allocation rule in `compute_allocation` is unchanged; the reports now describe what it does.
+**Blocked / open questions:**
+- Team decisions: which deck to present (the old `ITN_Allocation_Presentation.pptx` and `scripts/generate_deck.py` still carry the retired numbers) and whether to adopt the better-fitting region-effects model.
+- PR #4 needs one reviewer before merging to main.
+**Next:**
+- Review PR #4, choose the deck, add presenter names, and write the individual reflections and AI-use declarations.
+
 ## 2026-09-22 · 09:45–15:25 GMT · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a

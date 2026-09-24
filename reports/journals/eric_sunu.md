@@ -2,7 +2,7 @@
 
 ICS553 Machine Learning Essentials · MICS 2028 · Ashesi University
 Prosit 1, allocating insecticide-treated nets (ITNs) in Ghana · Group 3 · Role: statistician and lead analyst
-Last updated: 2026-09-22
+Last updated: 2026-09-24
 
 This is my personal journal. The group's shared journal, written for all of us, is
 [`reports/LEARNING_JOURNAL.md`](../LEARNING_JOURNAL.md).
@@ -10,7 +10,8 @@ This is my personal journal. The group's shared journal, written for all of us, 
 How this file was made: earlier versions were drafted with AI assistants (Gemini and
 Antigravity, 18 to 21 September; see `WORKLOG.md`). On 22 September every notebook was
 re-run from a clean kernel with Claude Code and each number here was checked against the
-output. Section 4 lists what changed. Section 7 is for my own reflections, in my own words.
+output; on 24 September those checks were added to notebooks 03 and 04. Section 4 lists
+what changed. Section 7 is for my own reflections, in my own words.
 
 ---
 
@@ -85,8 +86,8 @@ and a defensible one:
 ### Data leakage, and why a stratified split is not a spatial split
 - **Preprocessing.** Fitting a scaler on all 50 districts before splitting lets the test
   data shape the training transform. The mechanism is real, but here the effect is
-  negligible: 212 cases of RMSE at seed 42, and 43 on average over 500 seeds (about 0.03%
-  of the error). The leaky version looks better in only 57% of seeds.
+  negligible: 212 cases of RMSE at seed 42, and 44 on average over 500 seeds, noise next to
+  errors of about 90,000. The leaky version looks better in only 57% of seeds.
 - **Target encoding.** Encoding each district by its own case count makes the feature the
   answer: test R² 1.00, against 0.26 with honest features.
 - **Spatial.** Stratifying a split by region makes sure every region is in training and
@@ -142,8 +143,7 @@ and a defensible one:
 
 ## 3. Results log (checked on 2026-09-22)
 
-The source is a notebook cell unless marked *verification run*: those numbers came from the
-22 September check and still need adding to a notebook before we quote them to the panel.
+The source is a notebook cell unless marked *script*, meaning `scripts/verify_claims.py`.
 
 | Task | Result | Source |
 |---|---|---|
@@ -151,15 +151,15 @@ The source is a notebook cell unless marked *verification run*: those numbers ca
 | A2 Poisson fit | SD 442 against 122,882 (278 times) | nb02 cd15 |
 | A3 with population offset | Pearson χ²/df 54,147; NB α 0.2677; AIC gap 2,393,669 | nb02 cd25, cd26 |
 | A4 survey interval | Rural Northern 76.0%; naive 7.17 vs cluster 15.20 points; 2.12 times; DEFF 4.50 | nb02 cd33, cd34 |
-| A4 robustness | DEFF 4.46 to 5.39 over 20 seeds; design-based DEFF 4.18 | verification run |
+| A4 robustness | DEFF 4.46 to 5.39 over 20 seeds; design-based DEFF 4.18 | script, section A |
 | A4.1 published check | 67.69% vs 67.6% (0.09 points) | nb02 cd39 |
 | B1 weighting | Unweighted 70.96% vs weighted 66.77% | nb01 eda_cd05 |
-| B2 preprocessing leak | 87,144 vs 87,356 at seed 42; 43 on average over 500 seeds | nb03 leak_cd04; verification run |
+| B2 preprocessing leak | 87,144 vs 87,356 at seed 42; 44 on average over 500 seeds | nb03 leak_cd04, leak_cd12 |
 | B3 target leak | Test R² 1.0000 vs 0.2618 | nb03 leak_cd06 |
-| B4 spatial leak | Random vs stratified: no difference over 500 seeds; region held out: 365,128 | verification run |
-| C allocation | Northern 24,196, Upper East 18,631, Upper West 7,173; all 50 rows of `reports/allocation.md` reproduce | nb04 818b4cc5, d30e4cb4 |
-| C what the rule does | 8.5 / 16.0 / 9.2 nets per 1,000 people; coverage coefficient +0.082 | verification run |
-| C sensitivity | 7,720 nets move under region effects; 3,740 with corrected coverage | verification run |
+| B4 spatial leak | Random vs stratified: no difference over 500 seeds; region held out: 365,128 | nb03 leak_cd12, leak_cd14 |
+| C allocation | Northern 24,196, Upper East 18,631, Upper West 7,173; all 50 rows of `reports/allocation.md` reproduce | nb04 alloc_cd07, alloc_cd09 |
+| C what the rule does | 8.5 / 16.0 / 9.2 nets per 1,000 people; coverage coefficient +0.082 | nb04 alloc_cd11 |
+| C sensitivity | 7,720 nets move under region effects; 3,740 with corrected coverage | nb04 alloc_cd13 |
 
 ---
 

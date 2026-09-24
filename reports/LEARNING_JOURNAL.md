@@ -9,7 +9,7 @@ wrong and how it was found, and helps with the panel and Quiz 1.
 
 - Keep it current: replace a stale section rather than adding one that contradicts it.
 - Personal journals go in `reports/journals/<your-name>.md`; a template is in section 8.
-- Last updated 2026-09-22, after every notebook was re-run from a clean kernel and each
+- Last updated 2026-09-24, after every notebook was re-run from a clean kernel and each
   number below was checked against the output.
 
 ---
@@ -74,8 +74,8 @@ on the model.
 
 ## 3. Numbers you can quote
 
-Rows marked *verification run* were computed on 2026-09-22 by re-running the analysis; they
-still need to be added to notebooks 03 and 04 before we quote them to the panel.
+Most rows come from notebook cells. Rows marked *script* come from `scripts/verify_claims.py`,
+an independent re-computation that prints aggregates only (run it from the repo root).
 
 | Claim | Number | Source |
 |---|---|---|
@@ -85,14 +85,14 @@ still need to be added to notebooks 03 and 04 before we quote them to the panel.
 | The negative binomial fits better | α = 0.2677; AIC gap 2,393,669 | nb02 cd25, cd26 |
 | Weighting matters | 70.96% unweighted vs 66.77% weighted | nb01 eda_cd05 |
 | The cluster design widens intervals | 15.20 vs 7.17 points (2.12 times); DEFF 4.50 at seed 42 | nb02 cd34 |
-| The design effect is stable | 4.46 to 5.39 over 20 seeds; 4.18 design-based | verification run |
+| The design effect is stable | 4.46 to 5.39 over 20 seeds; 4.18 design-based | script, section A |
 | Our weighting reproduces the DHS | 67.69% vs 67.6% published (0.09 points) | nb02 cd39 |
 | Target encoding leaks | Test R² 1.0000 vs 0.2618 | nb03 leak_cd06 |
-| Holding out a region | RMSE 365,128, about four times a random or stratified split | verification run |
-| Allocation by region | Northern 24,196, Upper East 18,631, Upper West 7,173 | nb04; `reports/allocation.md` table |
-| Nets per 1,000 people | 8.5 / 16.0 / 9.2 | verification run |
-| The regional split is model-dependent | A region-effects model moves 7,720 nets | verification run |
-| Coverage data error matters | Correcting 11 districts' coverage moves 3,740 nets | verification run |
+| Holding out a region | RMSE 365,128, about four times a random or stratified split | nb03 leak_cd14 |
+| Allocation by region | Northern 24,196, Upper East 18,631, Upper West 7,173 | nb04 alloc_cd07 |
+| Nets per 1,000 people | 8.5 / 16.0 / 9.2 | nb04 alloc_cd11 |
+| The regional split is model-dependent | A region-effects model moves 7,720 nets | nb04 alloc_cd13 |
+| Coverage data error matters | Correcting 11 districts' coverage moves 3,740 nets | nb04 alloc_cd13 |
 
 ---
 
@@ -106,7 +106,7 @@ overstated.
 | Honest test R² 0.49 | 0.26 | 0.49 does not reproduce from the notebook |
 | Random splits understate error by 45.5% | Holding out a region raises error about four times; random and stratified splits agree | 45.5% came from one random seed |
 | Region-stratified splits prevent spatial leakage | Stratifying ensures representation; holding out regions tests new geography | Neighbours stay on both sides of a stratified split |
-| Preprocessing leakage deflates error by 212 cases | The mechanism is real; here the effect is negligible (43 cases on average over 500 seeds) | 212 was one seed |
+| Preprocessing leakage deflates error by 212 cases | The mechanism is real; here the effect is negligible (44 cases on average over 500 seeds) | 212 was one seed |
 | Upper bound of the 95% prediction interval | Upper bound of the 95% confidence interval for the mean | That is what the code computes |
 | Depot totals 24,980 / 17,547 / 7,473 | 24,196 / 18,631 / 7,173 | Sums of our own schedule |
 | Schedule total 5,263,334 people, 9,781,209 cases | 4,788,809 and 9,781,981 | Column sums of `reports/allocation.md` |
@@ -118,7 +118,7 @@ overstated.
 | Case-proportional allocation is the status quo | Ghana allocates ITNs by population, about one net per two people (web) | National malaria strategy |
 | Rural Northern is the most under-sampled region | It was chosen for its link to our districts; it ranks 10th of 16 by rural clusters | nb02 cd29 |
 | The weighting gap is a design effect | It comes from unequal selection probabilities | A design effect is a variance ratio |
-| 1.8 times wider, DEFF 3.3, 0.03 points | 2.12 times, DEFF 4.50, 0.09 points | The old numbers are from the Greater Accra domain; the README, the methodology guide and `reports/theme_a_guide.pdf` still show them |
+| 1.8 times wider, DEFF 3.3, 0.03 points | 2.12 times, DEFF 4.50, 0.09 points | The old numbers are from the Greater Accra domain; only `reports/theme_a_guide.pdf` still shows them |
 
 (web): from a web check on 2026-09-22 (Tamale Teaching Hospital's own site; the Ghana
 Service Provision Assessment 2002; the PMI Ghana Malaria Operational Plan FY2017). Open the
