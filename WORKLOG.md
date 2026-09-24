@@ -55,6 +55,7 @@ Field notes:
 - No new analysis. The uncertainty map uses only numbers already in the claims table (C-04a).
 **Blocked / open questions:**
 - PR #4 still needs a teammate's review, and the deck in it changed tonight.
+- Correction, added after the push: PR #4 had already been merged into `main` by a teammate at 16:27 GMT, so tonight's deck change is not in `main`. It is in PR #5, which needs one reviewer before merge. Until then the 16-slide deck is on `feature/theme-a`.
 - Slide 1 still says Group 3; add presenters' names if the panel expects them.
 - Slide 4's left map labels North East region as Northern East. The label comes from the boundary file's region names (see `scripts/verify_claims.py`), not from our code; not changed tonight.
 **Next:**
