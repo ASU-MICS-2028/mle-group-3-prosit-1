@@ -55,8 +55,28 @@ Place the course data package in `data/`. Then confirm it is ignored:
 git status   # no CSVs should appear
 ```
 
-Run the notebooks in numerical order. Everything must work from a fresh clone
-with no manual steps.
+## Running it
+
+One command runs the whole analysis, in order:
+
+```bash
+make                 # four notebooks in sequence, then verify_claims.py (~66s)
+```
+
+Or without `make`: `python scripts/run_pipeline.py`. It checks the environment
+and the data package first, stops at the first failing cell and prints its
+traceback, and executes into `build/` (gitignored) so the committed notebooks
+keep their stripped outputs. Useful flags:
+
+```bash
+python scripts/run_pipeline.py --only 02     # one notebook
+python scripts/run_pipeline.py --inplace     # keep outputs to read (strip before committing)
+python scripts/run_pipeline.py --deck        # also rebuild the presentation
+make verify                                  # re-check numbers without re-running notebooks
+make strip                                   # strip notebook outputs before committing
+```
+
+Everything must work from a fresh clone with no manual steps.
 
 ---
 

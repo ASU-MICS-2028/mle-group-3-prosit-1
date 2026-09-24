@@ -41,6 +41,27 @@ Field notes:
 
 ---
 
+## 2026-09-24 · 20:40–22:05 GMT · Tijani mubarak
+
+**Branch:** feature/pipeline-runner
+**Assistant:** Claude (Claude Code, Opus 5), to add a one-command pipeline runner, diagnose why `nbconvert` was executing the notebooks in the wrong interpreter, and to check the A1 answer in notebook 02 against our retired-claims list and draft a replacement. I reviewed the diff and the pipeline output before committing; the replacement wording is the assistant's draft and I still need to put it in my own words. It printed aggregates and district-level values only, never rows from `data/`.
+**Did:**
+- Added `scripts/run_pipeline.py` and a `Makefile`. `make` runs the four notebooks in order and then `scripts/verify_claims.py`: 66 seconds end to end on the full package. It checks the environment and the data package before executing anything, and stops at the first failing cell with its traceback.
+- Fixed a reproducibility bug the runner exposed. `jupyter nbconvert` resolves the registered `python3` kernelspec, which on this machine points at a different interpreter from the one running the pipeline, so notebooks failed on imports the preflight had just confirmed were present. The runner now writes a throwaway kernelspec pointing at `sys.executable`, so the notebooks always execute in the environment you invoked.
+- Executed copies go to `build/` (gitignored), so `make` never dirties the committed notebooks. Re-running produced byte-identical figures. `--inplace` keeps outputs when you want to read them; `--only 02` runs one notebook.
+- Corrected the A1 answer (nb02 `md12`). It still explained the high-count districts as "driven by central referral access", which section 4 of the group journal retires as a hypothesis our data do not support. It also named Wa as the second-largest district when Garu-Tempane (537,743) is second and has no regional hospital. Replaced with the interquartile range (99,000 to 243,000, median 158,000), the three largest districts, and the per-capita check: 39 of 50 districts record more than one confirmed case per resident over 2014-17, up to 7.13.
+- Pinned `nbconvert==7.16.4`; added `build/` to `.gitignore`.
+**Decided:**
+- The pipeline executes into `build/` rather than in place, so running it can never leave outputs in a committed notebook.
+- Left `CLAUDE.md` and every `Assistant:` field in this worklog untouched. They are the evidence behind our individual AI-use declarations, which the prosit requires to pass, and worklog entries are append-only.
+- No AI co-author trailers on commits, consistent with every previous commit in this repo. AI use is declared here and in the deck's closing slide, which is the mechanism the course asks for.
+**Blocked / open questions:**
+- The brief asks for "probability heatmaps". Our maps shade allocated nets and case rates, which are point quantities. No map yet shades a probability from the fitted negative binomial.
+**Next:**
+- Open a PR from `feature/pipeline-runner` and get one reviewer.
+- Reword the A1 answer in `md12` in my own voice. It is a judgement call I have to defend in the viva.
+- Decide whether to add an exceedance-probability map before the portfolio is marked.
+
 ## 2026-09-24 · 09:20–10:46 GMT (start approximate) · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a

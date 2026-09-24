@@ -18,6 +18,7 @@ ruff==0.4.9
 nbstripout==0.7.1
 ipykernel==6.29.4
 jupyterlab==4.2.1
+nbconvert==7.16.4      # scripts/run_pipeline.py executes the notebooks
 
 # Reporting and presentation generation
 python-pptx==1.0.2
