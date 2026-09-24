@@ -67,9 +67,9 @@ data/         gitignored — never committed
 notebooks/    01_eda, 02_distributions, 03_pipeline_leakage, 04_allocation
 src/          shared logic: io, features, models, uncertainty, viz
 figures/      exported figures for the deck
-reports/      datasheet, leakage audit, allocation, claims table, decks,
+reports/      datasheet, leakage audit, allocation, claims table, the deck,
               group learning journal (personal journals in reports/journals/)
-scripts/      deck builders and verify_claims.py (independent re-check of quoted numbers)
+scripts/      build_ashesi_deck.py (builds the deck) and verify_claims.py (re-checks quoted numbers)
 ```
 
 One notebook per theme, one owner per notebook. Two people editing the same
