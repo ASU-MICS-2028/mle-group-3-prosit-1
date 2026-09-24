@@ -1240,10 +1240,30 @@ def build():
         size=16,
         align=PP_ALIGN.CENTER,
     )
+    text(
+        s,
+        1.17,
+        6.35,
+        11.0,
+        0.7,
+        [
+            P(
+                B("AI declaration: ", c=GOLD),
+                "we used AI tools to help aggregate our information and to generate this "
+                "presentation from our aggregated information. How AI was used is logged in "
+                "the project's WORKLOG.md.",
+            )
+        ],
+        size=12,
+        color=WHITE,
+        align=PP_ALIGN.CENTER,
+    )
     notes(
         s,
         "Say: Thank you. Every number in this deck has its source in the speaker notes; we are happy to "
-        "take questions on any of them.",
+        "take questions on any of them.\n"
+        "The footnote is the group's AI declaration. Each member's own AI-use declaration is part of their "
+        "individual reflection.",
     )
 
     # remove the template's nine example slides; their parts are dropped on save
