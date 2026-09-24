@@ -41,6 +41,25 @@ Field notes:
 
 ---
 
+## 2026-09-24 · 22:26–23:45 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Claude (Claude Code, Opus 5.5), to write a plain-language panel script and a study guide for Quiz 1 (both published as claude.ai pages, not in the repo), to check the deck against the course's guidance files, and to add a two-map slide and wording fixes through the deck builder. It read code, reports and aggregates only, never rows from `data/`.
+**Did:**
+- Checked the deck against the grading weights in `CLAUDE.md` and the course's `SOLUTION_PLAN.md` and `prosit1-roadmap.html` (both one folder up). The roadmap asks for one slide with two maps side by side, expected burden and uncertainty; the deck had none.
+- Added slide 10, "Where the need looks highest, and how sure we are": confirmed cases per person by district next to how far the upper 95% bound sits above the estimate (20%, 34% and 16% by region, from the ratios 1.198, 1.342 and 1.162 in `04_allocation.ipynb` alloc_cd11). Both maps are drawn in `scripts/build_ashesi_deck.py` with `src/viz.plot_district_choropleth`, and an assert ties the slide text to the computed values.
+- Wording fixes: slide 2 gives the reason for population within a region and calls the regional totals a base case; slide 3 no longer claims we work at district level; slide 4 ends with what the rule can and cannot separate; slide 9 is retitled and its caption explains the positive coverage coefficient instead of calling it the opposite of the intent. Cross-references now point to slide 13.
+- Rebuilt the deck (now 16 slides), rendered it through PowerPoint and checked each changed slide. `black` and `ruff` pass on the builder.
+**Decided:**
+- Keep the slide order: both course files ask for the recommendation first, then the evidence, then questions. The new slide sits between the rule (9) and the allocation map (11).
+- No new analysis. The uncertainty map uses only numbers already in the claims table (C-04a).
+**Blocked / open questions:**
+- PR #4 still needs a teammate's review, and the deck in it changed tonight.
+- Slide 1 still says Group 3; add presenters' names if the panel expects them.
+- Slide 4's left map labels North East region as Northern East. The label comes from the boundary file's region names (see `scripts/verify_claims.py`), not from our code; not changed tonight.
+**Next:**
+- Rehearse aloud with a timer. The script runs about 12:45 at 130 words a minute.
+
 ## 2026-09-24 · 09:20–10:46 GMT (start approximate) · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a
