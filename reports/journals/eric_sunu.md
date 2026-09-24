@@ -187,8 +187,8 @@ The source is a notebook cell unless marked *script*, meaning `scripts/verify_cl
 
 The hospital-tier and national-strategy facts come from a web check on 22 September
 (Tamale Teaching Hospital's own site, the Ghana Service Provision Assessment 2002, and the
-PMI Ghana Malaria Operational Plan FY2017). I still need to read those sources myself
-before quoting them.
+PMI Ghana Malaria Operational Plan FY2017). On 24 September each source was downloaded and
+the wording confirmed against its text (claims table, E-01 to E-03).
 
 ---
 

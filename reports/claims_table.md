@@ -6,7 +6,8 @@ number, and the notebook cell, script or publication that produces it. Re-verifi
 
 - *Script* rows come from `scripts/verify_claims.py`, an independent re-computation that prints
   aggregates only (run it from the repo root).
-- *External* rows come from published sources; read the source before quoting it.
+- *External* rows come from published sources. E-01 to E-03 were checked against the text of
+  the downloaded sources on 2026-09-24.
 - Numbers retired as wrong or unreproducible are listed in `reports/LEARNING_JOURNAL.md`,
   section 4.
 
@@ -35,8 +36,8 @@ number, and the notebook cell, script or publication that produces it. Re-verifi
 | C-08 | Intervention status was dropped from the curated district file | IRS in 32 and SMC in 24 of 50 districts, 2014-17 | `scripts/verify_claims.py`, section E (raw workbook) | Verified (script) |
 | C-09 | Per-capita case counts are implausibly high for incidence | 39 of 50 districts report more than one confirmed case per resident over 2014-17 | `scripts/verify_claims.py`, section E | Verified (script) |
 | C-10 | Most of Ghana has no district surveillance data in our package | 207 of 260 districts | `scripts/verify_claims.py`, map join | Verified (script) |
-| E-01 | A regional average can hide local risk: predicted prevalence across Greater Accra's 29 districts (2020 survey, children 6 months to 10 years, rapid tests) against the 2022 DHS regional figure (children 6 to 59 months, microscopy) | 0 to 49% vs 2% | Oppong et al., Malaria Journal, doi:10.1186/s12936-025-05724-9; Ghana DHS 2022 final report (FR387), Table 12.15 | External |
-| E-02 | Ghana allocates ITNs by population: mass campaigns at about one net per two people, excluding districts with indoor residual spraying | | PMI Ghana Malaria Operational Plan FY2017 | External |
-| E-03 | Tamale Teaching Hospital is the only tertiary hospital for the three northern regions; regional hospitals are secondary | | https://tth.gov.gh/about; Ghana Service Provision Assessment 2002, chapter 2 | External |
+| E-01 | A regional average can hide local risk: predicted prevalence across Greater Accra's 29 districts (2020 survey, children 6 months to 10 years, rapid tests) against the 2022 DHS regional figure (children 6 to 59 months, microscopy) | 0 to 49% vs 2% | Oppong et al., Malaria Journal, doi:10.1186/s12936-025-05724-9; Ghana DHS 2022 final report (FR387), Table 12.15 | External, checked 2026-09-24 |
+| E-02 | Ghana allocates ITNs by population: mass campaigns at about one net per two people, excluding districts with indoor residual spraying | | PMI Ghana Malaria Operational Plan FY2017 | External, checked 2026-09-24 |
+| E-03 | Tamale Teaching Hospital is the only tertiary hospital for the three northern regions; regional hospitals are secondary | | https://tth.gov.gh/about; Ghana Service Provision Assessment 2002, chapter 2 | External, checked 2026-09-24 |
 | E-04 | Random hold-outs overestimated model performance by up to 28% (F1-score) against spatially blocked validation | | Kattenborn et al. 2022, doi:10.1016/j.ophoto.2022.100018 | External |
 | E-05 | Random validation overstates the predictive power of spatial models, which spatially blocked validation reveals | | Ploton et al. 2020, Nature Communications 11:4540, doi:10.1038/s41467-020-18321-y | External |

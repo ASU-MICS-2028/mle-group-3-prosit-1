@@ -98,7 +98,7 @@ an independent re-computation that prints aggregates only (run it from the repo 
 
 ## 4. Numbers and claims to stop using
 
-These appear in our reports or the old deck but are wrong, not reproducible, or
+These appeared in our reports or the old deck but are wrong, not reproducible, or
 overstated.
 
 | Stop saying | Say instead | Why |
@@ -120,9 +120,9 @@ overstated.
 | The weighting gap is a design effect | It comes from unequal selection probabilities | A design effect is a variance ratio |
 | 1.8 times wider, DEFF 3.3, 0.03 points | 2.12 times, DEFF 4.50, 0.09 points | The old numbers are from the Greater Accra domain; only `reports/theme_a_guide.pdf` still shows them |
 
-(web): from a web check on 2026-09-22 (Tamale Teaching Hospital's own site; the Ghana
-Service Provision Assessment 2002; the PMI Ghana Malaria Operational Plan FY2017). Open the
-source before quoting it.
+(web): from a web check on 2026-09-22, confirmed against the sources' own text on 2026-09-24:
+Tamale Teaching Hospital's own site, the Ghana Service Provision Assessment 2002 (chapter 2) and
+the PMI Ghana Malaria Operational Plan FY2017. See the claims table, E-01 to E-03.
 
 ---
 
