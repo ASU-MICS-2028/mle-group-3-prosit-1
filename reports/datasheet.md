@@ -2,7 +2,7 @@
 
 **Academic Course:** ICS553 Machine Learning Essentials · Ashesi University · MICS 2028  
 **Advisory Group:** Group 3 Consultancy (Eric Elikplim Sunu, Lead)  
-**Deliverable:** Data Provenance, Governance, Sampling Design, and Audit of 6 Known Data Issues
+**Deliverable:** Data Provenance, Governance, Sampling Design, and Audit of 9 Known Data Issues
 
 ---
 
@@ -18,11 +18,11 @@
 - **Dimensions:** 17,933 households across 618 primary sampling clusters and 16 administrative regions.
 - **Key Fields:**
   - `sample_weight`: Normalized DHS sampling weights ($w_i = \text{hv005} / 1,000,000$).
-  - `has_net`: Binary indicator of household ITN ownership ($1 = \text{owns } \ge 1 \text{ net}$, $0 = \text{none}$).
-  - `num_nets`: Integer count of mosquito nets observed in the dwelling.
-  - `urban_rural`: Stratification indicator ($1 = \text{urban}$, $2 = \text{rural}$).
-  - `hv024`: Administrative region code (1 to 16, post-2018 regional boundaries).
-  - `cluster_id`: Anonymized primary sampling unit (PSU).
+  - `has_net` (hv227): household owns at least one mosquito net of any kind, not only ITNs ($1$ = yes, $0$ = no). Survey-weighted, it agrees with the published ITN ownership figures within 0.3 points in the three northern regions.
+  - `num_nets` (hml1): number of mosquito nets the household reports.
+  - `residence` (hv025): 'urban' or 'rural'.
+  - `region` (hv024): 2022 16-region code (1 to 16).
+  - `cluster` (hv001): anonymized primary sampling unit (PSU).
 
 ### 2.2 Longitudinal Subnational Indicators (`data/ghana_region_malaria.csv`)
 - **Dimensions:** 76 survey-region observations across six DHS/MIS survey rounds (2003, 2008, 2014, 2016, 2019, 2022).
@@ -49,13 +49,13 @@ The DHS employs a probabilistic two-stage stratified cluster sampling design:
 ### 3.2 Design Effect (DEFF) & Variance Estimation
 Observations within the same cluster are positively correlated due to shared spatial ecology, socioeconomic clustering, and local mosquito breeding sites (intra-cluster correlation $\rho > 0$).
 - **Methodological Rule:** A simple random sample (SRS) assumption or naive household bootstrap drastically underestimates parameter variance.
-- **Implementation:** Design-consistent uncertainty estimation requires a **two-stage cluster bootstrap** (resampling clusters with replacement within strata, then resampling households within selected clusters).
+- **Implementation:** A **two-stage cluster bootstrap** (resampling clusters with replacement, then households within the drawn clusters; `src/uncertainty.py`). The extract has no strata column, so strata are not used; for a single-stratum domain such as rural Northern Region this makes no difference. A design-based (Taylor linearisation) calculation gives a similar design effect: 4.2 against the bootstrap's 4.5 (`scripts/verify_claims.py`, section A).
 
 ---
 
-## 4. Audit of 6 Known Data Issues & Methodological Mitigations
+## 4. Audit of 9 Known Data Issues & Methodological Mitigations
 
-During pipeline execution and exploratory data analysis, our team identified six critical data discrepancies against the course brief and standard epidemiological assumptions:
+During pipeline execution, exploratory analysis and a full re-verification of the notebooks, our team identified nine data discrepancies against the course brief and standard epidemiological assumptions:
 
 ### Issue 1: Missing Parasitaemia & Missing District Identifiers in Household Microdata
 - **Finding:** `ghana_mis_sample.csv` contains neither blood parasitaemia test results (RDT/microscopy) nor district-level geographic identifiers. The finest geographic resolution is region (`hv024`) and anonymized cluster.
@@ -92,7 +92,22 @@ During pipeline execution and exploratory data analysis, our team identified six
   6. *Sagnarigu* (spelling variant Sagnerigu)
   7. *Gushiegu* (spelling variant Gushegu)
 - **Impact:** Direct table joins result in 7 blank polygons on GIS choropleths.
-- **Mitigation:** Developed an explicit aliasing and polygon-aggregation mapper in `src/viz.py` (`plot_district_choropleth`), ensuring 100% northern district coverage on all cartographic maps.
+- **Mitigation:** Developed an explicit aliasing and polygon-aggregation mapper in `src/viz.py` (`plot_district_choropleth`): all 50 districts map to 53 polygons. Two current districts, Bolga East and North East Gonja (created in 2018-19 from Bolgatanga and East Gonja), still appear as gaps although their 2014-17 cases sit inside their parent districts, and each split district's single value is painted on both of its successor areas.
+
+### Issue 7: Districts Coded to the Wrong Current Region
+- **Finding:** All 26 old Northern Region districts carry `region_code` 12 and Northern's 2022 coverage (67.7%). Eleven now lie in the regions created in 2019: Savannah (Bole, Central Gonja, East Gonja, North Gonja, Sawla-Tuna-Kalba, West Gonja) and North East (Bunkpurugu-Yunyoo, Chereponi, East Mamprusi, Mamprugu-Moagduri, West Mamprusi), where 2022 survey-weighted coverage is 79.1% and 62.8%.
+- **Impact:** The coverage gap used by the allocation is wrong for these districts. Correcting it moves 3,740 nets (`04_allocation.ipynb`, alloc_cd13).
+- **Mitigation:** The mapping is recorded in `src/io.py` (`REGION_2019`), and the corrected allocation is reported as a sensitivity scenario in `reports/allocation.md`.
+
+### Issue 8: Intervention Status Dropped from the Curated File
+- **Finding:** The raw workbook (`data/raw/northern-ghana-districts-routine-data-2014-17.xlsx`) records indoor residual spraying (IRS) and seasonal malaria chemoprevention (SMC) by district and month; `ghana_district_cases.csv` does not. 32 of 50 districts had IRS and 24 had SMC in at least one month of 2014-17, including every Upper East and Upper West district.
+- **Impact:** Both interventions change malaria burden, and national campaigns exclude IRS districts from ITN mass distribution, so they matter for the model and for the policy.
+- **Mitigation:** Documented here (`scripts/verify_claims.py`, section E); a candidate district-level covariate for the next iteration.
+
+### Issue 9: Implausibly High Per-Capita Case Counts
+- **Finding:** 39 of 50 districts report more than one confirmed positive per resident over 2014-17, and 7 report more than one per resident per year (maximum 1.78 a year).
+- **Impact:** The counts likely include repeat episodes and care-seeking across district lines, or rest on undercounted population denominators, so per-capita rates are relative indicators, not incidence.
+- **Mitigation:** `positive_per_100k` is used only as a relative burden indicator, as the data dictionary advises (`scripts/verify_claims.py`, section E).
 
 ---
 

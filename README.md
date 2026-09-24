@@ -67,7 +67,9 @@ data/         gitignored — never committed
 notebooks/    01_eda, 02_distributions, 03_pipeline_leakage, 04_allocation
 src/          shared logic: io, features, models, uncertainty, viz
 figures/      exported figures for the deck
-reports/      datasheet, leakage audit, allocation, claims table
+reports/      datasheet, leakage audit, allocation, claims table, decks,
+              group learning journal (personal journals in reports/journals/)
+scripts/      deck builders and verify_claims.py (independent re-check of quoted numbers)
 ```
 
 One notebook per theme, one owner per notebook. Two people editing the same
@@ -79,31 +81,41 @@ One notebook per theme, one owner per notebook. Two people editing the same
 
 | Notebook | Theme | State |
 | --- | --- | --- |
-| `01_eda.ipynb` | B1 — geospatial EDA, data-gap map | Not started (Week 2 milestone) |
-| `02_distributions.ipynb` | A1–A4 — distributions, sampling | **Runs end to end on real data** |
-| `03_pipeline_leakage.ipynb` | B2–B4 — preprocessing, leakage audit | Not started |
-| `04_allocation.ipynb` | Allocation rule, heatmaps | Not started |
+| `01_eda.ipynb` | B1: geospatial EDA, data-gap maps | Runs end to end |
+| `02_distributions.ipynb` | A1-A4: distributions, sampling | Runs end to end |
+| `03_pipeline_leakage.ipynb` | B2-B4: preprocessing, leakage audit | Runs end to end |
+| `04_allocation.ipynb` | C: allocation rule, sensitivity, maps | Runs end to end |
 
-Headline results from Theme A (all reproduce with `RANDOM_SEED = 42`):
+All four were re-run from clean kernels on 2026-09-24. Headline results (all
+reproduce with `RANDOM_SEED = 42`):
 
-- District positive counts are over-dispersed with **variance/mean ≈ 77,200**.
-  A fitted Poisson implies sd 442 against an observed 122,882 — about 278x too
+- District positive counts are over-dispersed with **variance/mean ≈ 77,183**.
+  A fitted Poisson implies sd 442 against an observed 122,882, about 278x too
   narrow. Over-dispersion survives a log-population offset (Pearson chi2/df
-  ≈ 54,100), so the negative binomial is the working model.
-- The **cluster bootstrap interval is 1.8x wider** than a naive household
-  bootstrap on the same statistic, implying a design effect near 3.3.
-- Our survey-weighted estimate of regional net ownership reproduces the DHS
-  published figure to **0.03 percentage points**, which validates the weighting
-  (though not the interval — see below).
+  ≈ 54,147), so the negative binomial is the working model.
+- For rural Northern Region net ownership, the **cluster bootstrap interval is
+  2.12x wider** than a naive household bootstrap (15.20 against 7.17 points), a
+  design effect of about 4.5.
+- Our survey-weighted estimate of Northern Region net ownership reproduces the
+  DHS published figure to **0.09 percentage points**, which validates the
+  weighting (though not the interval; see below).
+- Random and region-stratified splits give the same test error, but **holding
+  out a whole region makes it about four times larger**, so the model does not
+  generalise to regions it has not seen (`03_pipeline_leakage.ipynb`).
+- The allocation gives Northern 24,196, Upper East 18,631 and Upper West 7,173
+  nets. Within each region it follows population, and a better-fitting
+  region-effects model moves 7,720 nets between regions (`04_allocation.ipynb`).
 
-Open decisions are marked in the notebook as **"Your turn"** cells.
+`reports/theme_a_guide.pdf` predates the switch of the A4 domain from Greater
+Accra to rural Northern Region; its numbers (1.8x, 0.03 points) are superseded
+by the notebook.
 
 ---
 
 ## Known data issues
 
-Found while running Theme A. All belong in `reports/datasheet.md`; the first two
-are discrepancies against the case brief and the data dictionary.
+Found while running the analysis. All are documented in `reports/datasheet.md`;
+the first two are discrepancies against the case brief and the data dictionary.
 
 1. **No parasitaemia column and no district identifier** in
    `ghana_mis_sample.csv`. The brief describes both. The finest geography the
@@ -134,6 +146,15 @@ are discrepancies against the case brief and the data dictionary.
    variants. The boundaries are 2021 vintage; the surveillance is 2014–17. B1
    needs an explicit name-to-pcode crosswalk, and the unmatched districts are a
    reportable gap.
+7. **Eleven districts coded Northern now lie in Savannah or North East**, where
+   2022 coverage is 79.1% and 62.8% rather than Northern's 67.7%. Correcting
+   this moves 3,740 nets; the mapping is `REGION_2019` in `src/io.py`.
+8. **Spraying and chemoprevention status was dropped.** The raw workbook records
+   indoor residual spraying (32 of 50 districts) and seasonal chemoprevention
+   (24 of 50) by district and month; the curated district file does not.
+9. **Per-capita counts are implausibly high.** 39 of 50 districts report more
+   than one confirmed case per resident over 2014-17, so rates are relative
+   indicators, not incidence.
 
 ---
 
@@ -170,13 +191,14 @@ high-burden tail and a negative binomial fits better. The household survey is a
 cluster sample, so confidence intervals must come from a bootstrap that
 resamples clusters rather than households — resampling households pretends the
 design was simple random sampling and produces intervals that are too narrow.
-Under-sampled rural and border districts therefore carry wide intervals, and
-our allocation rule uses that uncertainty rather than ranking on the point
-estimate alone.
+Survey estimates for thinly sampled domains therefore carry wide intervals.
+Our allocation rule weights each district by the upper confidence bound of its
+expected cases times its unmet coverage gap. Because coverage is known only by
+region, it allocates by population within each region, and the split between
+regions is the uncertain part (`reports/allocation.md`).
 
-The numbers behind each of those claims are in
-`notebooks/02_distributions.ipynb`, and every figure quoted in a report must
-cite its notebook section in `reports/claims_table.md`.
+The numbers behind each of those claims are in the notebooks, and every figure
+quoted in a report must cite its notebook cell in `reports/claims_table.md`.
 
 ---
 

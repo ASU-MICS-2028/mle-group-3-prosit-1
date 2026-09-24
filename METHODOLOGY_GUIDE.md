@@ -12,7 +12,7 @@ When tackling high-stakes statistical modeling, epidemiological resource allocat
 
 1. **The Senior Engineer Layer (Rigor & Mathematical Integrity):**
    - Zero data leakage (split first, fit second via scikit-learn `Pipeline` + `ColumnTransformer`).
-   - Spatial block stratification to respect geographic autocorrelation.
+   - Region-stratified splits so every region is in training, and whole-region hold-outs to test spatial generalisation.
    - Mathematically principled distribution selection (Negative Binomial over Poisson for over-dispersed counts).
    - Design-consistent survey uncertainty (two-stage cluster bootstrap).
    - Absolute privacy compliance: **Never print, echo, or commit licensed household rows from `data/`**.
@@ -26,7 +26,7 @@ When tackling high-stakes statistical modeling, epidemiological resource allocat
 
 ```mermaid
 flowchart TD
-    A["1. Systematic Rigor & Leakage Defense\n(Split first, spatial stratification, pipeline encapsulation)"] --> B["2. The Learning Journal\n(Plain-English intuition + empirical matrices + caveats)"]
+    A["1. Systematic Rigor & Leakage Defense\n(Split first, region hold-outs, pipeline encapsulation)"] --> B["2. The Learning Journal\n(Plain-English intuition + empirical matrices + caveats)"]
     B --> C["3. The Engineering Worklog\n(Timestamped audit trail of Did / Decided / Blocked)"]
     C --> D["4. Git Branch Discipline & Privacy\n(Feature branches, zero raw data commits, clean history)"]
     E["5. Viva Oral Defense Readiness\n(Anticipating panel grill questions with clear, defensible answers)"]
@@ -41,11 +41,12 @@ flowchart TD
    - No imputer, scaler, or encoder is ever fitted on data that includes the test set.
    - Analysis logic lives in `src/`. `src/io.py` owns the one split function. Never write a second one.
 2. **Spatial Autocorrelation (No Naive Random Splits):**
-   - Districts sitting next to each other share the same rainfall, river basin, and mosquito breeding ecology. A naive random split leaks information because the test district's "twin" is in the training set! Always split **stratified by geographic region**.
+   - Districts sitting next to each other share the same rainfall, river basin, and mosquito breeding ecology, so a test district whose neighbour is in training is partly seen already. Stratify splits **by region** so every region is in training, but stratifying does not stop this leak: neighbours still land on both sides. To test generalisation to new geography, **hold out whole regions** with `io.split_data(..., hold_out=region)`. In our data, holding out a region makes the error about four times larger than a random or stratified split (`03_pipeline_leakage.ipynb`).
+   - Repeat any split comparison over many seeds before calling a difference real: with 50 districts, one 10-district test set is an anecdote.
 3. **Over-Dispersion & The Poisson Failure:**
-   - In northern Ghana malaria counts, the variance is **77,204 times larger** than the mean ($\text{Var}/\text{Mean} \approx 77,204$). Poisson forces $\text{Var} = \text{Mean}$, assuming all districts are close to average and severely underestimating outbreak spikes. We fit Poisson only to mathematically prove its failure ($\chi^2/\text{df} \approx 54,100$), and use **Negative Binomial** ($\text{Var} = \mu + \alpha \mu^2$) as the true working model.
+   - In northern Ghana malaria counts, the variance is **77,183 times larger** than the mean ($\text{Var}/\text{Mean} \approx 77,183$). Poisson forces $\text{Var} = \text{Mean}$, assuming all districts are close to average and severely underestimating outbreak spikes. We fit Poisson only to mathematically prove its failure ($\chi^2/\text{df} \approx 54,147$), and use **Negative Binomial** ($\text{Var} = \mu + \alpha \mu^2$) as the true working model.
 4. **Survey Design & Two-Stage Cluster Bootstrap:**
-   - The Demographic and Health Survey (DHS) samples *clusters* (villages), not independent individuals. A naive bootstrap treats all households as independent, producing confidence intervals that are **1.8× too narrow** ($\text{DEFF} \approx 3.3$), creating dangerous false precision. We resample clusters with replacement, then households within chosen clusters.
+   - The Demographic and Health Survey (DHS) samples *clusters* (villages), not independent individuals. A naive bootstrap treats all households as independent, producing confidence intervals that are **about 2.1× too narrow** ($\text{DEFF} \approx 4.5$ for rural Northern Region), creating dangerous false precision. We resample clusters with replacement, then households within chosen clusters.
 
 ---
 
@@ -79,9 +80,9 @@ Every session must append an entry to the top of `WORKLOG.md`:
 **Assistant:** [e.g., Gemini / Antigravity], to [concise 1-sentence summary of the task].
 **Did:**
 - Concrete action 1 (e.g., implemented cluster bootstrap in `src/uncertainty.py`).
-- Concrete action 2 (e.g., verified DHS weighted regional net ownership matches official report to 0.03pp).
+- Concrete action 2 (e.g., verified DHS weighted regional net ownership matches official report to 0.09pp).
 **Decided:**
-- Defensible modeling decision (e.g., adopted Negative Binomial due to variance/mean ratio of 77,204; rejected target encoding).
+- Defensible modeling decision (e.g., adopted Negative Binomial due to variance/mean ratio of 77,183; rejected target encoding).
 **Blocked / open questions:**
 - Genuine uncertainties (e.g., boundary file mismatch for 7 post-2018 split districts).
 **Next:**
@@ -118,7 +119,7 @@ When defending in front of the examination panel:
 2. **"Why did Poisson regression fail?"**
    - *Plain Defense:* Poisson enforces $\text{Mean} = \text{Variance}$. In our northern Ghana data, the variance is 77,000 times larger than the mean. Poisson assumes extreme outbreaks are mathematically impossible ($p < 10^{-100}$), which would leave high-risk outbreak districts unprotected. Negative Binomial allows the variance to expand through its dispersion parameter $\alpha$.
 3. **"Why is a naive bootstrap unscientific on survey data?"**
-   - *Plain Defense:* The DHS used two-stage cluster sampling (villages, then households). Households in the same village share the same swamp and risk. A naive bootstrap pretends 17,000 households are independent, shrinking confidence intervals by nearly half ($\text{DEFF} \approx 3.3$). A two-stage cluster bootstrap resamples villages first, capturing the true survey uncertainty.
+   - *Plain Defense:* The DHS used two-stage cluster sampling (villages, then households). Households in the same village share the same swamp and risk. A naive bootstrap pretends the households are independent, shrinking the interval to less than half its honest width ($\text{DEFF} \approx 4.5$). A two-stage cluster bootstrap resamples villages first, capturing the true survey uncertainty.
 
 ---
 

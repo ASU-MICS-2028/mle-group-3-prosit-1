@@ -9,14 +9,14 @@
 
 ## 1. Executive Summary
 
-This advisory brief presents a scientifically defensible allocation schedule for **50,000 long-lasting insecticide-treated nets (ITNs)** across the 50 administrative districts of northern Ghana (Northern, Upper East, and Upper West regions).
+This brief presents an allocation schedule for **50,000 long-lasting insecticide-treated nets (ITNs)** across the 50 districts of northern Ghana (Northern, Upper East and Upper West as they were in 2014-17).
 
-Traditional allocation policies allocate commodities proportionally to routine clinic case counts. We demonstrate that this naive policy suffers from severe **referral hospital bias**, over-allocating nets to urban tertiary hubs where coverage already exceeds 79% while starving vulnerable rural catchment populations. 
+We compare two rules. A **case-proportional comparator** gives nets in proportion to reported positive cases. It is not Ghana's practice, which allocates ITNs by population through mass campaigns at about one net per two people (PMI Ghana Malaria Operational Plan FY2017). Our **equitable rule** weights each district by the upper 95% confidence bound of its expected cases (negative binomial with a log-population offset) times its unmet coverage gap ($1 - \text{coverage}$). Against the comparator:
+1. Nets move towards the most populous districts: **Tamale $+1,692$**, **Sagnarigu $+1,012$**, **East Gonja $+878$**.
+2. Districts that report many cases per person give nets up: **Wa $-1,516$**, **Nabdam $-761$**, **Bolgatanga $-665$**.
+3. Exactly 50,000 whole nets are allocated ($\sum_{i=1}^{50} A_i = 50,000$) by **Hamilton's largest-remainder method**.
 
-By modeling district transmission using a **Negative Binomial regression with log-population offset** and scaling by the **unmet coverage gap** ($1 - \text{coverage}$), our proposed equitable policy:
-1. Reallocates nets to high-population, low-coverage centers (**Tamale receives $+1,692$ additional nets**, **Sagnarigu $+1,012$**, **East Gonja $+878$**).
-2. Dampens over-allocation to hospital referral centers (**Wa loses $-1,516$ nets**, **Bolgatanga loses $-665$ nets**), where baseline coverage is already high and recorded cases reflect external catchment patients.
-3. Guarantees exact integer compliance ($\sum_{i=1}^{50} A_i = 50,000$) via **Hamilton's largest remainder apportionment**.
+Because coverage is known only by region, the rule allocates in proportion to population within each region (section 2). The split between regions depends on the model: a better-fitting region-effects model moves 7,720 nets (section 5). Sources: `04_allocation.ipynb`, cells alloc_cd07 to alloc_cd13.
 
 ---
 
@@ -26,13 +26,18 @@ By modeling district transmission using a **Negative Binomial regression with lo
 1. **Transmission Risk Estimation:**
    $$\log(\mu_i) = \beta_0 + \beta_1 \cdot \text{net\_coverage\_pct}_i + \log(\text{population}_i)$$
    where counts follow $\text{NB2}(\mu_i, \alpha)$, with estimated dispersion $\alpha = 0.2677$.
-2. **Uncertainty-Aware Epidemic Risk:**
-   We compute the upper bound of the 95% prediction interval $\hat{\mu}_{i,\text{upper}}$ to protect against epidemic surges.
+2. **Upper confidence bound:**
+   $\hat{\mu}_{i,\text{upper}}$ is the upper bound of the 95% confidence interval for $\mu_i$. It is a confidence interval for the mean, not a prediction interval for a district's count.
 3. **Unmet Need Weight:**
    $$W_i = \hat{\mu}_{i,\text{upper}} \times \left(1 - \frac{\text{net\_coverage\_pct}_i}{100}\right)$$
 4. **Apportionment (Hamilton's Method):**
    $$q_i = 50,000 \times \frac{W_i}{\sum_{j=1}^{50} W_j}, \quad A_i = \lfloor q_i \rfloor + r_i$$
    where $r_i \in \{0, 1\}$ assigned to the largest fractional remainders until $\sum A_i = 50,000$.
+
+### What the rule does in practice (`04_allocation.ipynb`, alloc_cd11)
+- `net_coverage_pct` takes one value per region, so $\mu_i$ is population times a regional rate. Within a region, nets follow population exactly: 8.5 nets per 1,000 people in Northern, 16.0 in Upper East and 9.2 in Upper West.
+- The upper bound multiplies each region by a constant (1.198, 1.342 and 1.162), so it shifts nets between regions, not between districts within a region.
+- The coverage coefficient is positive ($\beta_1 = +0.082$ per percentage point): regions with more nets had more malaria, because nets were sent where malaria was worst and the coverage (2022) post-dates the cases (2014-17). In the weight, this term outweighs the gap term, so higher-coverage regions receive more nets per person.
 
 ---
 
@@ -90,56 +95,58 @@ By modeling district transmission using a **Negative Binomial regression with lo
 | 48 | West Gonja | Northern Region | 47,944 | 67.7% | 96,371 | 493 | **408** | -85 |
 | 49 | Kumbungu | Northern Region | 45,220 | 67.7% | 51,640 | 264 | **385** | +121 |
 | 50 | Daffiama-Bussie-Issa | Upper West Region | 36,585 | 69.8% | 154,954 | 792 | **335** | -457 |
-| **Total** | **All 50 Districts** | — | **5,263,334** | — | **9,781,209** | **50,000** | **50,000** | **0** |
+| **Total** | **All 50 Districts** | | **4,788,809** | | **9,781,981** | **50,000** | **50,000** | **0** |
 
 ---
 
-## 4. Deep-Dive on Major Policy Reallocations
+## 4. Who Gains, Who Loses, and Why
 
-```
-        ┌─────────────────────────────────────────────────────────────┐
-        │       Top Gainers (Equitable Allocation > Naive)            │
-        ├─────────────────────────────────────────────────────────────┤
-        │ Tamale          │ +1,692 nets (High population, low cov gap)│
-        │ Sagnarigu       │ +1,012 nets (Peri-urban expansion zone)   │
-        │ East Gonja      │ +878 nets   (Rural underserved basin)     │
-        │ West Mamprusi   │ +791 nets   (High transmission ecology)   │
-        │ Gushiegu        │ +690 nets   (Clinic-deprived rural zone)  │
-        ├─────────────────────────────────────────────────────────────┤
-        │        Top Losers (Equitable Allocation < Naive)            │
-        ├─────────────────────────────────────────────────────────────┤
-        │ Wa              │ -1,516 nets (Referral hospital distortion)│
-        │ Nabdam          │ -761 nets   (Low pop, high existing cov)  │
-        │ Lambussie-Karni │ -707 nets   (Saturated net ownership)     │
-        │ Bolgatanga      │ -665 nets   (Regional hospital hub, ~80%) │
-        │ Sissala East    │ -634 nets   (Low unmet net deficit)       │
-        └─────────────────────────────────────────────────────────────┘
-```
+| District | Region | Change vs comparator | Cases per person, 2014-17 | Rank in region (1 = most) |
+|---|---|---|---|---|
+| Tamale | Northern | +1,692 | 0.37 | 26 of 26 |
+| Sagnarigu | Northern | +1,012 | 0.49 | 25 of 26 |
+| Bole | Northern | -376 | 2.70 | 1 of 26 |
+| Nabdam | Upper East | -761 | 7.13 | 1 of 13 |
+| Bolgatanga | Upper East | -665 | 4.02 | 4 of 13 |
+| Wa | Upper West | -1,516 | 4.28 | 1 of 11 |
 
-### Why Do Tamale and Sagnarigu Gain Over 2,700 Nets Combined?
-1. **Under-Credited by Naive Case Count:** Tamale has over 255,000 residents (by far the largest population in the dataset), yet reported only 94,577 positive cases over the 4-year surveillance period. Under naive allocation, it was awarded a meager 483 nets ($0.97\%$ of the shipment).
-2. **Unmet Coverage Need:** Northern Region’s baseline net coverage is $67.7\%$, compared to $79.6\%$ in Upper East. The absolute number of unprotected citizens in Tamale is the largest in northern Ghana. Allocating 2,175 nets closes a critical urban/peri-urban protection deficit.
+Source: `04_allocation.ipynb`, cells alloc_cd09 and alloc_cd11.
 
-### Why Do Wa and Bolgatanga Lose Significant Nets?
-1. **The Referral Hub Effect:** Wa (510,536 cases) and Bolgatanga (589,849 cases) recorded massive case totals not because local residents are infected at $5\times$ higher rates, but because they host the two primary regional tertiary hospitals in northern Ghana. Patients from small surrounding districts (e.g., Nabdam, Bongo, Wa East, Wa West) seek clinical care at these central facilities.
-2. **Diminishing Marginal Utility:** Upper East already has $79.6\%$ net coverage, and Upper West has $69.8\%$. Both municipal centers are saturated with nets from prior NGO campaigns. Awarding Bolgatanga 3,015 nets under naive rules would result in nets sitting unused in storerooms, while nearby rural districts lack basic bed coverage.
+### Why do Tamale and Sagnarigu gain?
+They are the two most populous districts in the dataset, and within a region the rule allocates by population. They also report the fewest cases per person of all 50 districts (Tamale the fewest, Sagnarigu the second fewest), so the case-proportional comparator gives them little: Tamale would receive 483 nets. Our rule treats their residents as being at the same risk as the rest of Northern Region. That is a value judgement, and we make it openly: it protects districts whose low counts may reflect low testing, at the cost of districts whose high counts reflect real burden.
+
+### Why do Wa and Bolgatanga lose?
+The rule moves nets towards Northern Region overall, and both districts report many cases per person for their regions (Wa 1st of 11, Bolgatanga 4th of 13), which a population rule does not reward. Referral bias, where a regional hospital records patients from neighbouring districts, may add to their counts, but it is a hypothesis, not a finding. Against it: Nabdam, often named as a sending district, reports the most cases per person of all 50 districts, and Tamale, home to the north's only tertiary hospital (claims table, E-03), reports the fewest.
 
 ---
 
-## 5. Sensitivity & Robustness Analysis
+## 5. Sensitivity: What Would Change the Answer
 
-1. **Shipment Size Sensitivity ($N = 25,000$ to $100,000$):**
-   Because Hamilton's apportionment scales linearly with the unmet need index $W_i$, relative shares remain strictly invariant. District priority order does not flip under budget expansions or cuts.
-2. **Coverage Measurement Uncertainty:**
-   If Northern Region's true net coverage is lower than the DHS point estimate ($67.7\%$), as suggested by our cluster bootstrap interval (which extends down to $60.1\%$), the true unmet need gap is even wider. Under extreme rural under-coverage scenarios, the allocation shift toward Northern Region is even more justified.
+One modelling choice changes at a time (`04_allocation.ipynb`, cell alloc_cd13):
+
+| Scenario | Northern | Upper East | Upper West | Nets moved |
+|---|---|---|---|---|
+| As proposed | 24,196 | 18,631 | 7,173 | 0 |
+| Point estimate instead of the upper bound | 25,095 | 17,240 | 7,665 | 1,391 |
+| Region-effects model (AIC 1,253.8 vs 1,286.8) | 18,634 | 16,473 | 14,893 | 7,720 |
+| Coverage corrected for the 11 districts now in Savannah or North East | 27,686 | 14,891 | 7,423 | 3,740 |
+| Northern coverage at its lower cluster-bootstrap bound (61.4%) | 22,939 | 18,596 | 8,465 | 1,292 |
+| Northern coverage at its upper cluster-bootstrap bound (74.0%) | 29,004 | 11,951 | 9,045 | 6,680 |
+
+- Within a region, nets follow population in every scenario except the coverage correction, which gives the 11 reassigned districts their current regions' coverage (Savannah 79.1%, North East 62.8%).
+- The regional split is the uncertain part. The region-effects model fits the data better and moves 7,720 nets, so regional totals should be read as a range, not a point.
+- Lower Northern coverage does not earn Northern Region more nets under this model: because the coverage coefficient is positive, it gives fewer (22,939 at 61.4%).
+- A larger or smaller budget does not change shares: Hamilton apportionment scales every district's share, up to rounding.
 
 ---
 
 ## 6. Implementation Roadmap for NMEP
 
 1. **Logistics & Warehousing:** Route bulk shipments to three central regional depots:
-   - Tamale Central Depot: 24,980 nets (Northern Region)
-   - Bolgatanga Depot: 17,547 nets (Upper East Region)
-   - Wa Central Depot: 7,473 nets (Upper West Region)
+   - Tamale Central Depot: 24,196 nets (Northern Region)
+   - Bolgatanga Depot: 18,631 nets (Upper East Region)
+   - Wa Central Depot: 7,173 nets (Upper West Region)
+
+   (Regional totals from `04_allocation.ipynb`, cell alloc_cd07.)
 2. **Last-Mile Distribution:** District health directorates must distribute directly through Community-Based Health Planning and Services (CHPS) compounds, prioritizing pregnant women attending antenatal care (ANC) and children receiving measles immunizations.
 3. **Post-Distribution Audit:** Rapid cluster surveys must be conducted at 6 months post-distribution to assess net retention, hanging rates, and physical integrity.
