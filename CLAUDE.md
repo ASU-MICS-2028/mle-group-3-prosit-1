@@ -33,8 +33,11 @@ Two things that look fine and are not:
   comparison in the leakage audit, clearly labelled.
 - **Random row-wise splits leak through geography.** Districts are spatially
   autocorrelated — a district and its neighbour share rainfall, elevation and
-  transmission conditions. Split stratified by region. If you see
-  `train_test_split` called without a stratification argument, flag it.
+  transmission conditions. Stratify splits by region so every region is in
+  training, and flag `train_test_split` called without a stratification
+  argument. Stratifying does not stop this leak, though: neighbours still land
+  on both sides. To test generalisation to new geography, hold out whole
+  regions with `split_data(..., hold_out=region)`.
 
 `src/io.py` owns the one split function. Import it; never write a second one.
 
