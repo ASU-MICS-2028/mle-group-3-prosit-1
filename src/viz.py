@@ -105,8 +105,12 @@ def plot_district_choropleth(
     case_df: pd.DataFrame,
     value_col: str = "positive_per_100k",
     title: str = "Malaria Surveillance Coverage & Case Rate across Ghana Districts",
+    legend_label: str = "Cumulative Positives per 100k (2014–17)",
 ) -> Tuple[plt.Figure, plt.Axes]:
-    """Map Ghana's 260 districts, shading the 50 northern surveillance districts."""
+    """Map Ghana's 260 districts, shading the 50 northern surveillance districts.
+
+    Set legend_label to match value_col when it is not the case rate.
+    """
     import geopandas as gpd
     import re
 
@@ -160,7 +164,7 @@ def plot_district_choropleth(
         linewidth=0.8,
         legend=True,
         legend_kwds={
-            "label": "Cumulative Positives per 100k (2014–17)",
+            "label": legend_label,
             "orientation": "horizontal",
             "shrink": 0.7,
             "pad": 0.05,
@@ -341,22 +345,19 @@ def plot_policy_shift_map(
     )
     adm1_north.boundary.plot(ax=ax, color="#1A237E", linewidth=1.5)
 
-    landmarks = {
-        "Tamale": "+1,692 (Metropolitan Hub)",
-        "Sagnarigu": "+1,012 (Peri-urban)",
-        "Bolgatanga": "-665 (Referral Hospital)",
-        "Wa": "-1,516 (Referral Hospital)",
-    }
-    for dist_name, label in landmarks.items():
+    # Label the largest gains and losses with their computed change; Tamale's label
+    # goes below so it does not sit under its neighbour Sagnarigu's.
+    deltas = alloc_df.set_index("district")["delta"]
+    for dist_name in ["Tamale", "Sagnarigu", "Bolgatanga", "Wa"]:
         k = norm(dist_name)
         k = aliases.get(k, k)
         if k in adm_norm_map:
             geom = adm2.loc[adm_norm_map[k], "geometry"]
             pt = geom.centroid
             ax.annotate(
-                f"{dist_name}\n{label}",
+                f"{dist_name}\n{deltas[dist_name]:+,}",
                 xy=(pt.x, pt.y),
-                xytext=(0, 22),
+                xytext=(0, -34 if dist_name == "Tamale" else 22),
                 textcoords="offset points",
                 ha="center",
                 fontsize=8,

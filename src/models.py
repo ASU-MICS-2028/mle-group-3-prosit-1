@@ -155,48 +155,55 @@ def compare_fits(poisson_results: Any, nb_results: Any) -> pd.DataFrame:
     return pd.DataFrame(rows).set_index("model")
 
 
+def hamilton(weights, total: int) -> np.ndarray:
+    """Hamilton (largest remainder) apportionment of `total` in proportion to weights.
+
+    Returns whole numbers that sum exactly to total.
+    """
+    w = np.asarray(weights, dtype=float)
+    raw = (w / w.sum()) * total
+    seats = np.floor(raw).astype(int)
+    seats[np.argsort(-(raw - seats))[: total - seats.sum()]] += 1
+    return seats
+
+
 def compute_allocation(
     district_df: pd.DataFrame,
     nb_results: Any,
     total_nets: int = 50000,
     offset: Optional[np.ndarray] = None,
 ) -> pd.DataFrame:
-    """Compute naive vs equitable (need-weighted) net allocation with Hamilton apportionment.
+    """Case-proportional vs equitable (need-weighted) allocation, both by Hamilton.
 
-    Weights by upper-bound predicted risk (to protect against epidemic surges)
-    and the unmet coverage gap (1 - coverage/100).
+    The equitable weight is the upper bound of the 95% confidence interval for each
+    district's expected cases, times its unmet coverage gap (1 - coverage/100).
     """
     df = district_df.copy()
 
-    # Naive: proportional to reported positive cases
-    naive_weights = df["positive_cases"].to_numpy().astype(float)
-    raw_naive = (naive_weights / naive_weights.sum()) * total_nets
-    naive_seats = np.floor(raw_naive).astype(int)
-    rem_naive = total_nets - naive_seats.sum()
-    if rem_naive > 0:
-        top_idx = np.argsort(-(raw_naive - naive_seats))[:rem_naive]
-        naive_seats[top_idx] += 1
-    df["naive_allocation"] = naive_seats
+    # Comparator: proportional to reported positive cases
+    df["naive_allocation"] = hamilton(df["positive_cases"], total_nets)
 
-    # Equitable: Upper bound predicted cases * unmet net coverage gap
+    # Equitable: upper confidence bound of expected cases * unmet coverage gap
     pred = nb_results.get_prediction(df, offset=offset)
     sf = pred.summary_frame(alpha=0.05)
     df["predicted_cases"] = sf["predicted"].to_numpy()
     df["pred_ci_lower"] = sf["ci_lower"].to_numpy()
     df["pred_ci_upper"] = sf["ci_upper"].to_numpy()
 
-    gap = 1.0 - (df["net_coverage_pct"] / 100.0)
-    df["unmet_need_gap"] = gap
-    eq_weights = df["pred_ci_upper"].to_numpy() * gap
-    df["allocation_weight"] = eq_weights
-
-    raw_eq = (eq_weights / eq_weights.sum()) * total_nets
-    eq_seats = np.floor(raw_eq).astype(int)
-    rem_eq = total_nets - eq_seats.sum()
-    if rem_eq > 0:
-        top_idx = np.argsort(-(raw_eq - eq_seats))[:rem_eq]
-        eq_seats[top_idx] += 1
-    df["equitable_allocation"] = eq_seats
+    df["unmet_need_gap"] = 1.0 - (df["net_coverage_pct"] / 100.0)
+    df["allocation_weight"] = df["pred_ci_upper"] * df["unmet_need_gap"]
+    df["equitable_allocation"] = hamilton(df["allocation_weight"], total_nets)
     df["delta"] = df["equitable_allocation"] - df["naive_allocation"]
 
     return df
+
+
+def allocate(
+    district_df: pd.DataFrame,
+    formula: str = "positive_cases ~ net_coverage_pct",
+    total_nets: int = 50000,
+) -> pd.DataFrame:
+    """Fit the NB with a log-population offset, then run compute_allocation on it."""
+    offset = np.log(district_df["mean_population"].clip(lower=1)).to_numpy()
+    nb = fit_negative_binomial_mle(formula, district_df, offset=offset)
+    return compute_allocation(district_df, nb, total_nets=total_nets, offset=offset)

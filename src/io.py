@@ -1,15 +1,33 @@
-"""Data loading, validation, and stratified splitting logic.
+"""Data loading, validation, and the project's one split function.
 
-All splits must use split_data() to enforce region stratification.
+All splits go through split_data(): stratified by region by default, or with one
+whole region held out to test generalisation to new geography.
 """
 
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
 RANDOM_SEED = 42
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+
+# Districts coded Northern (hv024 12) in the 2014-17 surveillance file that lie in the
+# regions created in 2019: Savannah (13) and North East (14). Source: the COD admin-2
+# boundaries in data/ghana_boundaries and the 2019 region changes.
+REGION_2019 = {
+    "Bole": 13,
+    "Central Gonja": 13,
+    "East Gonja": 13,
+    "North Gonja": 13,
+    "Sawla-Tuna-Kalba": 13,
+    "West Gonja": 13,
+    "Bunkpurugu-Yunyoo": 14,
+    "Chereponi": 14,
+    "East Mamprusi": 14,
+    "Mamprugu-Moagduri": 14,
+    "West Mamprusi": 14,
+}
 
 
 def load_mis_sample(data_dir: Optional[Path] = None) -> pd.DataFrame:
@@ -51,15 +69,35 @@ def split_data(
     test_size: float = 0.2,
     stratify_col: str = "region",
     random_seed: int = RANDOM_SEED,
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Perform a train/test split stratified by region to avoid spatial leakage.
+    hold_out=None,
+) -> tuple:
+    """Train/test split, stratified by region so every region appears in training.
 
-    Returns (train_df, test_df) or ((X_train, X_test), (y_train, y_test)).
+    Stratifying does not stop spatial leakage: neighbours still fall on both sides.
+    To test generalisation to unseen geography, pass hold_out=<region>; the test set
+    is then every row of that region. Returns (train, test), or (X_train, X_test,
+    y_train, y_test) when target_col is given.
     """
     if stratify_col not in df.columns:
         raise ValueError(
             f"Stratification column '{stratify_col}' missing from data. "
-            "Splits must be stratified by region to prevent spatial leakage."
+            "Splits must be stratified by region so every region is in training."
+        )
+
+    if hold_out is not None:
+        in_test = df[stratify_col] == hold_out
+        if not in_test.any():
+            raise ValueError(
+                f"No rows with {stratify_col} == {hold_out!r} to hold out."
+            )
+        train, test = df[~in_test], df[in_test]
+        if target_col is None:
+            return train, test
+        return (
+            train.drop(columns=[target_col]),
+            test.drop(columns=[target_col]),
+            train[target_col],
+            test[target_col],
         )
 
     stratify = df[stratify_col]
