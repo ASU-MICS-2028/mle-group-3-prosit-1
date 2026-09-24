@@ -41,6 +41,138 @@ Field notes:
 
 ---
 
+## 2026-09-24 · 09:20–10:46 GMT (start approximate) · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Claude (Claude Code, Opus 5.5), to fix what the 22 September verification found: move the verification checks into the notebooks, correct the reports, and bring the deck builder and verification script into the repo. It printed aggregates and derived district values only, never rows from `data/`.
+**Did:**
+- `src/io.py`: `split_data(..., hold_out=region)` holds out a whole region (still the one split function); `REGION_2019` lists the 11 districts now in Savannah or North East. `src/models.py`: Hamilton apportionment extracted into `hamilton()` (allocation unchanged, all 50 rows re-checked) and an `allocate()` helper. `src/viz.py`: the map legend label is a parameter, and the policy-shift map's labels are computed without the "(Referral Hospital)" tags.
+- Notebook 03: 500-seed comparison (leak_cd12) and whole-region hold-out (leak_cd14), with disciplined splits through `io.split_data`; the audit table is now computed (leak_cd10). Notebook 04: shell-corrupted markdown repaired, readable cell ids, kernelspec set, wrong claims corrected, regional totals printed (alloc_cd07), new cells for what the rule does (alloc_cd11) and sensitivity (alloc_cd13). All four notebooks re-run from clean kernels; every new number matches the verification run; figures unchanged except c2 (legend) and c3 (labels).
+- Corrected `reports/claims_table.md` (every deck number now has a row), `leakage_audit.md`, `allocation.md` (Total row, depot totals, confidence not prediction interval, the real sensitivity table), `framing.md`, `datasheet.md` (field names, issues 7 to 9), `README.md`, `METHODOLOGY_GUIDE.md`, and the journals' sources.
+- `CLAUDE.md`: the spatial-split rule now says to stratify for representation and hold out whole regions to test new geography (its own commit, easy to revert).
+- Added `scripts/verify_claims.py`, `scripts/build_ashesi_deck.py` and the Ashesi Presentation Red template; rebuilt `reports/ITN_Allocation_Ashesi.pptx`, whose speaker notes now cite notebook cells.
+- Kept one deck: removed the old `reports/ITN_Allocation_Presentation.pptx`, its generator `scripts/generate_deck.py` and the two logo images only it used. Added an AI declaration to the closing slide: we used AI tools to help aggregate our information and to generate the presentation from it.
+- Checked the external facts on the slides against their downloaded sources (PMI Ghana Malaria Operational Plan FY2017, Ghana Service Provision Assessment 2002, Tamale Teaching Hospital's site, the Greater Accra paper and the DHS 2022 final report); all confirmed (claims table, E-01 to E-03).
+**Decided:**
+- Correct facts, keep policy: the allocation rule in `compute_allocation` is unchanged; the reports now describe what it does.
+- Keep only the new Ashesi deck. Keep the current allocation rule for the panel; the better-fitting region-effects model stays as the main sensitivity result.
+**Blocked / open questions:**
+- PR #4 needs one reviewer before merging to main.
+**Next:**
+- A teammate reviews PR #4 and merges it; add presenter names to slide 1 when agreed; write the individual reflections and AI-use declarations.
+
+## 2026-09-22 · 09:45–15:25 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Claude (Claude Code, Opus 5), to independently verify the repo (re-run all four notebooks from clean kernels in an isolated copy, recompute every quoted number, stress-test the leakage and allocation claims), to build a corrected presentation deck on the official Ashesi Presentation Red template, and to split the learning journal into a group journal and my personal journal. It printed aggregates and derived district values only, never rows from `data/`.
+**Did:**
+- Confirmed reproducibility: 4/4 notebooks run from clean kernels, 9/9 figures regenerate byte-identical, all Theme A numbers reproduce, the 50-row allocation schedule reproduces, and git history holds no data files or notebook outputs.
+- Found errors to fix: within each region the allocation is population times a regional constant; the +0.082 coverage coefficient gives higher-coverage regions more nets per person; the 45.5% spatial-leak figure is seed luck (500 seeds; leave-one-region-out RMSE 365,128); R² 0.4905 does not reproduce (0.2618); depot totals should be 24,196 / 18,631 / 7,173; the `allocation.md` Total row should read 4,788,809 people and 9,781,981 cases; no cell produces 60.1%; 11 region-12 districts are now in Savannah or North East; the `c2` map legend says positives per 100k but shows nets. Full list in the group journal, section 4.
+- Web check by a Claude sub-agent (web only): Ghana allocates ITNs by population (about one net per two people, IRS districts excluded); Tamale Teaching Hospital is the only tertiary hospital in the north; the Greater Accra 49% vs 2% opener needs rewording. The raw workbook's IRS/SMC columns (32 and 24 of 50 districts) were dropped from the curated file.
+- Built a 15-slide deck on the Ashesi Presentation Red template with corrected numbers, the audit findings and speaker notes citing a source for every number. Added as `reports/ITN_Allocation_Ashesi.pptx` next to the old deck. About a third of its numbers come from the verification run and still need adding to notebooks 03 and 04, and its speaker notes cite `PROSIT1_verify.py`, which is not in the repo yet.
+- Split the learning journal: `reports/LEARNING_JOURNAL.md` is now the group journal (quotable numbers with sources, retired claims, lessons, panel practice, a personal-journal template); my personal journal moved to `reports/journals/eric_sunu.md`, corrected, with reflection prompts I still have to answer in my own words. Updated `METHODOLOGY_GUIDE.md` Pillar 2 to match.
+**Decided:**
+- The group journal lives at `reports/LEARNING_JOURNAL.md`; personal journals live in `reports/journals/<name>.md`.
+**Blocked / open questions:**
+- The team needs to decide the allocation rule before the slides are final.
+- The reports and the committed deck still carry the retired numbers listed in the group journal, section 4.
+**Next:**
+- Move the verification-run numbers into notebooks 03 and 04, correct the reports, then decide whether the new deck replaces `reports/ITN_Allocation_Presentation.pptx`.
+
+## 2026-09-22 · 09:50–10:00 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Antigravity (Advanced Agentic Assistant), to integrate official Ashesi University Brand Guidelines (https://brand.ashesi.edu.gh/university/) into the presentation deck, update gitignore, push commits to remote, and open Pull Request #4.
+**Did:**
+- Extracted official Ashesi brand specifications: primary Pale Carmine (`#A83F43`), deep burgundy (`#5E1214`), warm academic gold (`#C59B27`), Garamond serif title typography, and Candara/Poppins body typography.
+- Downloaded official high-resolution Ashesi University logo assets (`figures/ashesi_logo.png`).
+- Redesigned `scripts/generate_deck.py` and regenerated `reports/ITN_Allocation_Presentation.pptx` with Ashesi executive title slide, gold accent lines, brand badges, and slide watermark headers.
+- Added `~$*` to `.gitignore` to prevent Office lock files from being tracked.
+- Pushed branch `feature/theme-a` to GitHub and opened Pull Request #4 (`https://github.com/ASU-MICS-2028/mle-group-3-prosit-1/pull/4`).
+**Decided:**
+- Applied official Ashesi Pale Carmine (`#A83F43`) and Garamond serif headers across all presentation slides.
+**Blocked / open questions:**
+- None.
+**Next:**
+- Team review on PR #4 and viva presentation rehearsal.
+
+## 2026-09-21 · 23:30–23:55 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Antigravity (Advanced Agentic Assistant), to complete Themes B, C, and D end-to-end: implement `notebooks/01_eda.ipynb`, `notebooks/03_pipeline_leakage.ipynb`, and `notebooks/04_allocation.ipynb`; add `compute_allocation` in `src/models.py` and `plot_allocation_comparison` in `src/viz.py`; author `reports/framing.md`, `reports/allocation.md`, `reports/leakage_audit.md`; update `reports/datasheet.md`, `reports/claims_table.md`, and `reports/LEARNING_JOURNAL.md`; run `black` and `ruff`; clear notebook outputs. Zero survey microdata rows displayed or committed.
+**Did:**
+- Authored and verified `notebooks/01_eda.ipynb` (Theme B1), generating `figures/b1_data_availability.png` (DHS cluster distribution) and `figures/b1_district_case_rate.png` (50 northern surveillance districts vs 210 un-surveyed districts). Verified Claim C-01 (unweighted net ownership 70.96% vs weighted 66.77%, delta 4.19 pp).
+- Authored and verified `notebooks/03_pipeline_leakage.ipynb` (Theme B2–B4), auditing preprocessing leakage (test RMSE deflated by 212 cases), target encoding catastrophe (fake R² = 1.0000), and spatial autocorrelation leakage (test RMSE underestimated by 45.5%: 47,646 vs 87,356). Fully updated `reports/leakage_audit.md`.
+- Added `compute_allocation` in `src/models.py` (implementing Hamilton integer apportionment for 50,000 nets based on Negative Binomial upper-bound risk and unmet coverage gap) and `plot_allocation_comparison` in `src/viz.py`.
+- Authored and verified `notebooks/04_allocation.ipynb` (Theme C), computing 50-district schedule and exporting `figures/c1_allocation_comparison.png`.
+- Authored `reports/framing.md` (decision architecture, evaluation metric, asymmetric minimax loss, operational constraints, and referral bias trade-offs).
+- Authored `reports/allocation.md` (complete 50-district allocation schedule, gainer/loser analysis: Tamale +1,692, Sagnarigu +1,012 vs Wa -1,516, Bolgatanga -665, sensitivity analysis, and NMEP rollout roadmap).
+- Updated `reports/datasheet.md` with complete analysis of all 6 known data issues and their mitigations.
+- Updated `reports/claims_table.md` (all claims C-01, C-02, C-02b, C-02c, C-03, C-04, C-05 verified).
+- Completed `reports/LEARNING_JOURNAL.md` with plain-English mental models, empirical results matrices, and comprehensive Viva exam defense scripts.
+- Cleared outputs across all 4 notebooks (`jupyter nbconvert --clear-output --inplace`).
+- Formatted and linted code with `black src/` and `ruff check src/` (0 errors).
+**Decided:**
+- Formalized equitable allocation formula using upper bound of Negative Binomial 95% CI scaled by $(1 - \text{coverage}/100)$ and apportioned via Hamilton's method.
+- Established Referral Hospital Bias defense to explain why Bolgatanga and Wa lose nets despite highest hospital case counts.
+**Blocked / open questions:**
+- None. Entire pipeline, technical reports, and viva preparation are complete.
+**Next:**
+- Merge feature branch into main, review slide deck, and rehearse oral defense.
+
+## 2026-09-21 · 22:50–23:25 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Gemini (Gemini 3.8 Flash), to resolve open judgment decisions in `notebooks/02_distributions.ipynb` (Theme A), implement Northern Region domain override, generate `figures/a4_bootstrap_ci_comparison.png`, clear notebook outputs, and update `reports/claims_table.md` and `reports/LEARNING_JOURNAL.md`. No survey rows read or displayed.
+**Did:**
+- Set notebook owner to Eric Elikplim Sunu in `notebooks/02_distributions.ipynb`.
+- Formulated plain-English and technical answer for Section A1 case-count distribution (cell `md12`), noting mass clustering between 40k-300k and right tail outliers (Bolgatanga, Wa).
+- Justified and applied manual override in Section A4 (cell `md30` & `cd31`), replacing programmatic Accra selection with Northern Region (`hv024 = 12`, 20 rural clusters, 582 households) to anchor 50 surveillance districts.
+- Formulated defensible claim for Section A4.1 (cell `md40`), establishing survey-weighted point estimate reproduction to within 0.09 percentage points of published DHS figure (67.69% vs 67.60%) while clarifying lack of published ITN CI.
+- Executed notebook end-to-end to generate `figures/a4_bootstrap_ci_comparison.png` (cluster CI 15.2 pp vs naive 7.2 pp, DEFF = 4.50).
+- Stripped notebook outputs cleanly via `jupyter nbconvert --clear-output`.
+- Updated `reports/claims_table.md` (claims C-02, C-02b, C-02c, C-03 verified) and `reports/LEARNING_JOURNAL.md`.
+**Decided:**
+- Locked Northern Region (`hv024 = 12`) as the canonical rural uncertainty domain for Prosit 1, connecting survey uncertainty directly with surveillance districts and capturing DEFF = 4.50.
+**Blocked / open questions:**
+- Ready to begin Theme B1 geospatial exploration in `notebooks/01_eda.ipynb`.
+**Next:**
+- Commit Theme A updates to `feature/theme-a`, push to remote, and start Theme B1 (district and regional geospatial mapping).
+
+## 2026-09-21 · 13:20–13:28 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Gemini (Gemini 3.8 Flash), to author `METHODOLOGY_GUIDE.md` translating the NLP 5-pillar learning and engineering methodology into the MLE context (Theme A/B/C/D, zero data leakage, spatial stratification, over-dispersion, cluster bootstrap, learning journal, and oral defense readiness). No survey rows read or displayed.
+**Did:**
+- Authored `METHODOLOGY_GUIDE.md` codifying the "Explain to a beginner, build like a senior" pedagogy, DHS survey cluster uncertainty, spatial leakage protection, negative binomial modeling, learning journal rituals, and viva defense Q&A.
+**Decided:**
+- Harmonized collaborative and reflective standards across both MICS 2028 coursework repositories (NLP Prosit 1 and MLE Prosit 1).
+**Blocked / open questions:**
+- None. Ready to proceed with Theme B tasks.
+**Next:**
+- Review Theme A decision points and commence Theme B1 spatial analysis.
+
+---
+
+## 2026-09-18 · 09:15–12:20 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Gemini (Gemini 3.8 Flash), to synchronize remote git changes, checkout `feature/theme-a`, populate `data/` from parent data package, install Python 3.11 via Homebrew, build `.venv`, install pinned requirements, register `prosit1` Jupyter kernel, and create `reports/LEARNING_JOURNAL.md` adopting the NLP reflective structure. No survey rows read or displayed.
+**Did:**
+- Fast-forwarded local `main` to `origin/main` (incorporating PR #2).
+- Checked out and tracked `feature/theme-a` containing Theme A analysis by Tijani.
+- Placed course data files from parent `../data/` into `data/` and verified git status remains clean via `.gitignore`.
+- Installed `python@3.11` via Homebrew, created `.venv`, and installed all pinned requirements from `requirements.txt`.
+- Registered Jupyter kernel `Python 3.11 (prosit1)`.
+- Verified clean module imports across all `src/` modules.
+- Created `reports/LEARNING_JOURNAL.md` documenting plain-English conceptual guides, empirical logs, data caveats, and viva defense answers.
+**Decided:**
+- Maintained a dedicated reflective learning journal (`reports/LEARNING_JOURNAL.md`) following the pattern of the NLP project to document intuition and viva readiness.
+**Blocked / open questions:**
+- Review the 4 "Your turn" open decisions in `notebooks/02_distributions.ipynb` before proceeding to Theme B.
+**Next:**
+- Review the "Your turn" cells in notebook 02, verify outputs, and begin Theme B1 (geospatial mapping in `01_eda.ipynb`).
+
 ## 2026-09-14 · 21:05–21:30 GMT · Eric Elikplim Sunu
 
 **Branch:** feature/repo-setup
