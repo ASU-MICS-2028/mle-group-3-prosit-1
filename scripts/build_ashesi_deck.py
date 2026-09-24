@@ -5,6 +5,7 @@ Every number on a slide comes from a notebook cell or scripts/verify_claims.py; 
 slide's speaker notes say which. Writes reports/ITN_Allocation_Ashesi.pptx.
 """
 
+import re
 import sys
 import tempfile
 import warnings
@@ -56,6 +57,18 @@ def B(t, **st):
     return (t, {"b": True, **st})
 
 
+def eq(src, f="Cambria Math", **st):
+    """Runs for a formula or a line with symbols: _x or _{xy} marks a subscript."""
+    runs = []
+    for part in re.split(r"(_\{[^}]*\}|_\w)", src):
+        if part:
+            sub = part.startswith("_")
+            runs.append(
+                (part.strip("_{}") if sub else part, {"f": f, "sub": sub, **st})
+            )
+    return runs
+
+
 def bulletize(p, color=RED, indent=0.24):
     ppr = p._p.get_or_add_pPr()
     ppr.set("marL", str(Inches(indent)))
@@ -84,7 +97,9 @@ def fill(tf, paras, size=14, color=INK, align=PP_ALIGN.LEFT, space=6):
             r = p.add_run()
             r.text = t
             f = r.font
-            f.name = FONT
+            f.name = st.get("f", FONT)
+            if st.get("sub"):
+                f._element.set("baseline", "-25000")  # subscript
             f.size = Pt(st.get("s", para["s"] or size))
             f.bold = st.get("b", False)
             f.italic = st.get("i", False)
@@ -847,50 +862,74 @@ def build():
         "Remote Sensing, doi:10.1016/j.ophoto.2022.100018 (up to 28% overestimation of F1-score).",
     )
 
-    # 9. What the rule does
+    # 9. What the rule does, written as math; the speaker notes read it in words
     s = add(TEXT_HEAVY)
     title(s, 11, "What our rule does with our data", width=W)
     drop(s, 12, 13)
     text(
         s,
         0.62,
-        1.55,
-        6.0,
-        4.8,
+        1.45,
+        6.85,
+        5.0,
         [
-            P(B("The rule", c=RED, s=18), after=4),
+            P(B("The rule, for each district i", c=RED, s=17), after=4),
+            P(*eq("log μ_i = log pop_i + β_0 + β_1 c_i"), s=18, after=2),
+            P(*eq("w_i = U_i × (1 − c_i / 100)"), s=18, after=2),
             P(
-                "Weight = upper 95% bound of expected cases (negative binomial with a population offset) × "
-                "(1 - net coverage). Hamilton's largest-remainder method turns the weights into exactly 50,000 "
-                "whole nets.",
-                after=14,
+                *eq(
+                    "q_i = 50,000 × w_i / Σ_j w_j,   A_i = ⌊q_i⌋ or ⌊q_i⌋ + 1,   Σ_i A_i = 50,000"
+                ),
+                s=15,
+                after=6,
             ),
-            P(B("What it does in practice", c=RED, s=18), after=4),
             P(
-                "Coverage is one number per region, so expected cases are population times a regional rate. "
-                "Within a region, nets follow population exactly.",
+                *eq(
+                    "Unit: district i. Target: μ_i, expected confirmed cases 2014-17, from a negative "
+                    "binomial (variance μ_i + αμ_i², α = 0.268). Metric: the weight w_i. U_i: upper 95% "
+                    "confidence bound for μ_i. c_i: % of homes with a net in i's region. A_i: nets, by "
+                    "Hamilton's largest-remainder method.",
+                    f=FONT,
+                ),
+                s=11.5,
+                c=MUTED,
+                after=10,
+            ),
+            P(B("What it does with our data", c=RED, s=17), after=4),
+            P(
+                *eq(
+                    "c_i takes one value per region, so inside a region nets follow population: "
+                    "8.5, 16.0 and 9.2 per 1,000 people.",
+                    f=FONT,
+                ),
                 bullet=True,
-                after=8,
+                after=6,
             ),
             P(
-                "The upper bound is a confidence interval for the mean, not a prediction interval. It adds one "
-                "multiplier per region: 1.20, 1.34 and 1.16.",
+                *eq(
+                    "U_i = μ_i × 1.20, 1.34 or 1.16: one multiplier per region, from a confidence "
+                    "interval for the mean.",
+                    f=FONT,
+                ),
                 bullet=True,
-                after=8,
+                after=6,
             ),
             P(
-                "The coverage coefficient is positive (+0.082 per point): regions with more nets had more malaria. "
-                "So higher coverage earns more nets per person.",
+                *eq(
+                    "β_1 = +0.082 per point: more nets went with more malaria, so the split between "
+                    "regions is uncertain.",
+                    f=FONT,
+                ),
                 bullet=True,
             ),
         ],
-        size=14,
+        size=13,
     )
     bar_chart(
         s,
-        7.0,
+        7.7,
         1.55,
-        5.7,
+        5.0,
         4.2,
         ["Northern (67.7%)", "Upper West (69.8%)", "Upper East (79.6%)"],
         [8.51, 9.17, 16.02],
@@ -899,10 +938,10 @@ def build():
     )
     text(
         s,
-        7.0,
+        7.7,
         5.8,
-        5.7,
-        0.55,
+        5.0,
+        0.6,
         [
             P(
                 "Nets per 1,000 people by region, with the share of households owning a net (DHS 2022). "
@@ -915,13 +954,21 @@ def build():
     )
     notes(
         s,
-        "Say: Because coverage is a single regional number, the model can only tell regions apart, so "
-        "within a region every district gets the same nets per person. The coverage coefficient is "
-        "positive because nets went where malaria was worst, and coverage is from 2022 while cases are "
-        "from 2014-17, so it cannot be read as a protective effect.\n"
-        "Sources: notebooks/04_allocation.ipynb cell alloc_cd11 (coefficient +0.0823, p = 1.7e-07; "
-        "upper-to-expected ratios 1.198, 1.342, 1.162; nets per 1,000 people). Coverage values: "
-        "notebooks/02 cell cd06 and scripts/verify_claims.py section D.",
+        "Say: The slide writes the rule as math; say it in words. Line one: expected confirmed cases grow "
+        "in proportion to population and depend on the region's net coverage (a negative binomial model "
+        "with a population offset). Line two: each district's weight is the cautious upper end of its "
+        "expected cases times the share of homes without a net. Line three: Hamilton's largest-remainder "
+        "method turns the weights into exactly 50,000 whole nets. Then: because coverage is one number "
+        "per region, inside a region nets follow population; the upper bound adds one multiplier per "
+        "region; and the coverage coefficient is positive because nets went where malaria was worst, so "
+        "the split between regions is uncertain.\n"
+        "Symbols: i = district (the unit); mu_i = expected confirmed cases, 2014-17 (the target); "
+        "w_i = allocation weight (the metric); pop_i = population; c_i = % of homes owning a net in i's "
+        "region (DHS 2022); U_i = upper 95% confidence bound for mu_i; q_i = exact share; A_i = nets.\n"
+        "Sources: notebooks/04_allocation.ipynb cells alloc_cd05 (alpha 0.2677) and alloc_cd11 "
+        "(beta_1 = +0.0823, p = 1.7e-07; U_i / mu_i = 1.198, 1.342, 1.162; nets per 1,000 people); "
+        "src/models.py compute_allocation and hamilton. Coverage values: notebooks/02 cell cd06 and "
+        "scripts/verify_claims.py section D.",
     )
 
     # 10. Burden next to uncertainty: the two-map slide the course roadmap asks for

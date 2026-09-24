@@ -41,6 +41,21 @@ Field notes:
 
 ---
 
+## 2026-09-25 · 00:00–23:58 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Claude (Claude Code, Opus 5.5), to read the case brief and lecture 01 that Eric added to the Machine Learning folder, to check the deck and the two prep pages against the brief's rubric, and to write slide 9's rule as math (a teammate's suggestion). It read code, reports and aggregates only, never rows from `data/`.
+**Did:**
+- Read the case brief (`Prosit1_Case_Module_Malaria_Allocation.pdf`, one folder up). Its rubric (section 7) asks for a clear target, unit and metric, for wide intervals to drive a fair allocation, and for heatmaps that tell the story; its deliverables ask for probability heatmaps. Slide 10, added earlier tonight, is the heatmap pair.
+- Slide 9 now states the rule as math: log μ_i = log pop_i + β_0 + β_1 c_i; w_i = U_i × (1 − c_i / 100); Hamilton's method for A_i with Σ A_i = 50,000; plus a key naming the unit (district), the target (μ_i) and the metric (w_i). The speaker notes read each line in words. The builder gained subscript support for this.
+- Rebuilt and rendered the deck; `black` and `ruff` pass.
+**Decided:**
+- Math on the slide, plain English in the talk: the presenter reads the formulas aloud in words.
+**Blocked / open questions:**
+- The brief says `ghana_district_cases.csv` includes rainfall, temperature, elevation and distance to water; our file and `data_dictionary.md` have none of them. This is not yet in the datasheet.
+- Learning outcome LO7 asks us to critique the WHO figure the brief quotes (263 million cases and 597,000 deaths in 2023); none of our reports do yet.
+- PR #5 still needs a teammate's review before merge.
+
 ## 2026-09-24 · 22:26–23:45 GMT · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a
