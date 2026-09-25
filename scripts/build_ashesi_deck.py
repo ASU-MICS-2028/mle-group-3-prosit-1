@@ -810,7 +810,7 @@ def build():
         4.5,
         [
             P(
-                "A split stratified by region still puts each test district's neighbours in the training set.",
+                "A split stratified by region still puts each test district's neighbors in the training set.",
                 bullet=True,
                 after=12,
             ),
@@ -825,7 +825,7 @@ def build():
                 after=12,
             ),
             P(
-                "So the model cannot yet rank districts in a region it has not seen, such as the 207 districts "
+                "So, the model cannot yet rank districts in a region it has not seen, such as the 207 districts "
                 "outside our data.",
                 bullet=True,
             ),
@@ -1385,8 +1385,7 @@ def build():
             P(
                 B("AI declaration: ", c=GOLD),
                 "we used AI tools to help aggregate our information and to generate this "
-                "presentation from our aggregated information. How AI was used is logged in "
-                "the project's WORKLOG.md.",
+                "presentation from our aggregated information.",
             )
         ],
         size=12,

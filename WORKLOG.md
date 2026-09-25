@@ -41,6 +41,15 @@ Field notes:
 
 ---
 
+## 2026-09-25 · 00:15–00:19 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Claude (Claude Code, Opus 5.5), to push Eric's PowerPoint edits to the deck and copy them into the deck builder.
+**Did:**
+- Eric edited the deck in PowerPoint: slide 8 now reads "neighbors" and "So, the model cannot yet rank..."; slide 16's AI declaration no longer points to WORKLOG.md. The builder now produces the same text, checked slide by slide against the saved deck.
+**Blocked / open questions:**
+- PR #5 is not merged. Claude Code's permission check refused to merge it without a review, in line with `RULES.md` (one reviewer before merge). A teammate needs to review and merge it, or Eric can merge it on GitHub.
+
 ## 2026-09-25 · 00:00–00:00 GMT · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a
