@@ -1362,7 +1362,72 @@ def build():
         "notebooks/02 cell cd06.",
     )
 
-    # 16. Close
+    # 16. References, each checked against the source itself on 25 September 2026
+    s = add(TEXT_HEAVY)
+    title(s, 11, "References", width=W)
+    drop(s, 12, 13)
+    for x, head, refs in [
+        (
+            0.62,
+            "Published sources",
+            [
+                "[1] Oppong SK, Dosoo DK, Peprah NY, et al. Fine-scale spatial mapping of urban malaria "
+                "prevalence for microstratification in an urban area of Ghana. Malaria Journal 25:50 "
+                "(published 18 December 2025). doi:10.1186/s12936-025-05724-9. Slide 3.",
+                "[2] Ghana Statistical Service (GSS) and ICF. Ghana Demographic and Health Survey 2022. "
+                "Accra, Ghana, and Rockville, Maryland, USA: GSS and ICF; 2024. Slides 3, 6 and 13.",
+                "[3] U.S. President's Malaria Initiative. Ghana Malaria Operational Plan FY 2017. "
+                "Published 25 October 2016. Slides 12 and 14.",
+                "[4] Ghana Statistical Service, Health Research Unit (Ministry of Health) and ORC Macro. "
+                "Ghana Service Provision Assessment Survey 2002. Calverton, Maryland; 2003. Slide 12.",
+                "[5] Tamale Teaching Hospital. About the hospital. tth.gov.gh/about "
+                "(accessed 24 September 2026). Slide 12.",
+                "[6] Ploton P, Mortier F, Réjou-Méchain M, et al. Spatial validation reveals poor predictive "
+                "performance of large-scale ecological mapping models. Nature Communications 11:4540 (2020). "
+                "doi:10.1038/s41467-020-18321-y. Slide 8.",
+                "[7] Kattenborn T, Schiefer F, Frey J, et al. Spatially autocorrelated training and "
+                "validation samples inflate performance assessment of convolutional neural networks. ISPRS "
+                "Open Journal of Photogrammetry and Remote Sensing 5:100018 (2022). "
+                "doi:10.1016/j.ophoto.2022.100018. Slide 8.",
+            ],
+        ),
+        (
+            6.77,
+            "Data, software and code",
+            [
+                "[8] Ghana 2022 DHS household data: a de-identified extract of the household recode, used "
+                "under the course's DHS data-use authorization, with the DHS subnational indicators for Ghana.",
+                "[9] Ghana Health Service routine malaria surveillance for 50 northern districts, 2014-17, "
+                "from the ICS553 course data package.",
+                "[10] OCHA. Ghana subnational administrative boundaries (COD-AB), via the Humanitarian Data "
+                "Exchange. Maps on slides 4, 10 and 11.",
+                "[11] Pedregosa F, et al. Scikit-learn: Machine Learning in Python. Journal of Machine "
+                "Learning Research 12:2825-2830 (2011).",
+                "[12] Seabold S, Perktold J. statsmodels: Econometric and statistical modeling with Python. "
+                "Proceedings of the 9th Python in Science Conference (2010).",
+                "[13] Group 3. Project repository, with the notebook cell behind every number "
+                "(reports/claims_table.md) and the datasheet (reports/datasheet.md): "
+                "github.com/ASU-MICS-2028/mle-group-3-prosit-1",
+            ],
+        ),
+    ]:
+        text(
+            s,
+            x,
+            1.5,
+            5.95,
+            4.9,
+            [P(B(head, c=RED, s=15), after=6)] + [P(r, after=5) for r in refs],
+            size=10.5,
+        )
+    notes(
+        s,
+        "Sources: each reference was checked on 25 September 2026 against the source itself: DOIs and "
+        "journal details, the publishers' own recommended citations, and the passages the deck relies on "
+        "(reports/claims_table.md, rows E-01 to E-05).",
+    )
+
+    # 17. Close
     s = add(CLOSING)
     title(s, 0, "Thank you. Questions?", size=60)
     text(
