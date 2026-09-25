@@ -154,7 +154,14 @@ def drop(slide, *idxs):
 
 
 def notes(slide, t):
-    slide.notes_slide.notes_text_frame.text = t
+    """Write the sources into the speaker notes. The deck is submitted, so the "Say:" talk
+    track and presenter reminders stay in this file and the panel script, not in the notes.
+    """
+    keep = [
+        ln for ln in t.split("\n") if not ln.startswith(("Say:", "Add the presenters"))
+    ]
+    if keep:
+        slide.notes_slide.notes_text_frame.text = "\n".join(keep)
 
 
 def picture(slide, path, x, y, w, h):
@@ -1279,8 +1286,8 @@ def build():
         "Say: Equity is about who the rule helps and who it cannot see.\n"
         "Sources: 207 of 260 districts: scripts/verify_claims.py (map join). Test positivity and cases per person "
         "by region: scripts/verify_claims.py section E. Spraying and chemoprevention counts: scripts/verify_claims.py "
-        "section E, from data/raw/northern-ghana-districts-routine-data-2014-17.xlsx (these columns are "
-        "not in ghana_district_cases.csv). Campaign rules: PMI Ghana Malaria Operational Plan FY2017. "
+        "section E, from the raw surveillance workbook in the course data package (these columns are "
+        "not in the curated district file). Campaign rules: PMI Ghana Malaria Operational Plan FY2017. "
         "Privacy: git history holds no data files and no notebook outputs (checked 2026-09-22).",
     )
 

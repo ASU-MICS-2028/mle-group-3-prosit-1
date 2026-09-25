@@ -41,6 +41,16 @@ Field notes:
 
 ---
 
+## 2026-09-25 · 00:00–00:00 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Claude (Claude Code, Opus 5.5), to make the deck's speaker notes fit for submission.
+**Did:**
+- The deck will be submitted as a .pptx, so its speaker notes now carry only each slide's sources, plus the symbol key on slide 9 and the AI-declaration note on slide 16. The talk track lives in the panel script, outside the repo.
+- Removed a path into `data/` from slide 14's notes, which `CLAUDE.md` does not allow in committed files; the notes now name the raw surveillance workbook in the course package. Earlier commits of the deck still have that path in their notes. It is a path to a gitignored file, not data.
+**Decided:**
+- Keep the sources in the notes rather than deleting the notes: the brief's submission checklist asks for every statistic to cite a source.
+
 ## 2026-09-24 · 23:46–23:59 GMT (start approximate) · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a
