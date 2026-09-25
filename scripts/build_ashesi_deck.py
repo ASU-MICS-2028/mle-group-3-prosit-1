@@ -5,6 +5,7 @@ Every number on a slide comes from a notebook cell or scripts/verify_claims.py; 
 slide's speaker notes say which. Writes reports/ITN_Allocation_Ashesi.pptx.
 """
 
+import re
 import sys
 import tempfile
 import warnings
@@ -56,6 +57,18 @@ def B(t, **st):
     return (t, {"b": True, **st})
 
 
+def eq(src, f="Cambria Math", **st):
+    """Runs for a formula or a line with symbols: _x or _{xy} marks a subscript."""
+    runs = []
+    for part in re.split(r"(_\{[^}]*\}|_\w)", src):
+        if part:
+            sub = part.startswith("_")
+            runs.append(
+                (part.strip("_{}") if sub else part, {"f": f, "sub": sub, **st})
+            )
+    return runs
+
+
 def bulletize(p, color=RED, indent=0.24):
     ppr = p._p.get_or_add_pPr()
     ppr.set("marL", str(Inches(indent)))
@@ -84,7 +97,9 @@ def fill(tf, paras, size=14, color=INK, align=PP_ALIGN.LEFT, space=6):
             r = p.add_run()
             r.text = t
             f = r.font
-            f.name = FONT
+            f.name = st.get("f", FONT)
+            if st.get("sub"):
+                f._element.set("baseline", "-25000")  # subscript
             f.size = Pt(st.get("s", para["s"] or size))
             f.bold = st.get("b", False)
             f.italic = st.get("i", False)
@@ -139,7 +154,14 @@ def drop(slide, *idxs):
 
 
 def notes(slide, t):
-    slide.notes_slide.notes_text_frame.text = t
+    """Write the sources into the speaker notes. The deck is submitted, so the "Say:" talk
+    track and presenter reminders stay in this file and the panel script, not in the notes.
+    """
+    keep = [
+        ln for ln in t.split("\n") if not ln.startswith(("Say:", "Add the presenters"))
+    ]
+    if keep:
+        slide.notes_slide.notes_text_frame.text = "\n".join(keep)
 
 
 def picture(slide, path, x, y, w, h):
@@ -264,8 +286,10 @@ def crop_title(src, dst, gap=12):
     return dst
 
 
-def allocation_map(dst):
-    """Redraw the allocation map with the team's own code, zoomed north, legend labelled as nets."""
+def north_maps(tmp):
+    """Draw the allocation, burden and uncertainty maps with the team's own code, zoomed north."""
+    import matplotlib.pyplot as plt
+
     sys.path.insert(0, str(REPO))
     from src import io as pio, models, viz
 
@@ -276,23 +300,37 @@ def allocation_map(dst):
     )
     alloc = models.compute_allocation(d, nb, total_nets=50000, offset=off)
     assert alloc["equitable_allocation"].sum() == 50000
+    alloc["cases_per_person"] = alloc["positive_cases"] / alloc["mean_population"]
+    # how far the upper 95% bound sits above the estimate; one value per region
+    alloc["pct_above"] = (alloc["pred_ci_upper"] / alloc["predicted_cases"] - 1) * 100
+    by_region = alloc.groupby("region_code")["pct_above"]
+    assert (by_region.max() - by_region.min()).max() < 1e-6
+    assert sorted(by_region.first().round()) == [16, 20, 34]  # the slide text
     b = REPO / "data" / "ghana_boundaries"
     viz.set_theme()
-    fig, ax = viz.plot_district_choropleth(
-        b / "gha_admin0.geojson",
-        b / "gha_admin1.geojson",
-        b / "gha_admin2.geojson",
-        alloc,
-        value_col="equitable_allocation",
-        title="",
-    )
-    ax.set_xlim(-3.3, 0.75)
-    ax.set_ylim(7.9, 11.25)
-    cbar = fig.axes[-1]
-    cbar.set_xlabel("Nets allocated under the proposed rule", fontsize=13)
-    cbar.tick_params(labelsize=11)
-    fig.savefig(dst, dpi=220, bbox_inches="tight", pad_inches=0.05)
-    return dst
+    out = {}
+    for key, col, label in [
+        ("alloc", "equitable_allocation", "Nets allocated under the proposed rule"),
+        ("burden", "cases_per_person", "Confirmed cases per person, 2014-17"),
+        ("uncertainty", "pct_above", "Upper 95% bound, % above the estimate"),
+    ]:
+        fig, ax = viz.plot_district_choropleth(
+            b / "gha_admin0.geojson",
+            b / "gha_admin1.geojson",
+            b / "gha_admin2.geojson",
+            alloc,
+            value_col=col,
+            title="",
+        )
+        ax.set_xlim(-3.3, 0.75)
+        ax.set_ylim(7.9, 11.25)
+        cbar = fig.axes[-1]
+        cbar.set_xlabel(label, fontsize=13)
+        cbar.tick_params(labelsize=11)
+        out[key] = tmp / f"{key}_map.png"
+        fig.savefig(out[key], dpi=220, bbox_inches="tight", pad_inches=0.05)
+        plt.close(fig)
+    return out
 
 
 # ---------------------------------------------------------------- the deck
@@ -307,7 +345,7 @@ def build():
             "b1_district_case_rate",
         )
     }
-    fig["alloc"] = allocation_map(tmp / "alloc_map.png")
+    fig.update(north_maps(tmp))
 
     prs = Presentation(TEMPLATE)
     n_template = len(prs.slides)
@@ -401,22 +439,29 @@ def build():
     text(
         s,
         0.62,
-        5.25,
+        5.1,
         W,
-        1.0,
+        1.3,
         [
             P(
+                B("Why population within a region: ", c=RED),
+                "net coverage is measured once per region, so our data cannot tell two districts "
+                "in the same region apart.",
+                after=6,
+            ),
+            P(
                 B("How sure we are: ", c=RED),
-                "district shares within a region are robust; the regional split is not. "
-                "A better-fitting model moves 7,720 nets between regions (slide 12).",
-            )
+                "the shares within each region are robust. The regional totals are our base case: "
+                "a better-fitting model moves 7,720 nets between regions (slide 13).",
+            ),
         ],
-        size=16,
+        size=15,
     )
     notes(
         s,
-        "Say: Within each region the rule allocates in proportion to population; regional totals come "
-        "from our negative binomial model. Be upfront that the regional split depends on the model.\n"
+        "Say: Within each region the rule allocates in proportion to population, because coverage is "
+        "measured once per region. The regional totals come from our negative binomial model and are our "
+        "base case; be upfront that the regional split depends on the model.\n"
         "Sources: notebooks/04_allocation.ipynb, cell alloc_cd07 (regional totals), alloc_cd11 "
         "(nets per 1,000 people) and alloc_cd13 (7,720 nets moved under the region-effects model).",
     )
@@ -467,7 +512,8 @@ def build():
         [
             P(
                 "Different ages and tests, so this is not like for like. The point is the spread: one regional figure "
-                "can hide districts at very high risk. That is why we work at district level wherever the data allow."
+                "can hide districts at very high risk. That is why we wanted district-level targeting; the next "
+                "slide shows how far our data allow it."
             )
         ],
         size=16,
@@ -521,34 +567,40 @@ def build():
         8.35,
         1.55,
         4.36,
-        3.95,
+        4.75,
         [
-            P(B("What this means", c=RED, s=18), after=10),
+            P(B("What this means", c=RED, s=18), after=8),
             P(
                 B("Weights matter. "),
                 "Unweighted, 71.0% of households own a net; weighted, 66.8%.",
                 bullet=True,
-                after=10,
+                after=8,
             ),
             P(
                 B("Different years. "),
                 "Net coverage is from 2022; cases are from 2014-17.",
                 bullet=True,
-                after=10,
+                after=8,
             ),
             P(
                 B("Coarse coverage. "),
                 "Coverage is known only by region: three values for 50 districts.",
                 bullet=True,
-                after=10,
+                after=8,
             ),
             P(
                 B("No district survey data. "),
                 "The survey can rank regions, not districts.",
                 bullet=True,
+                after=12,
+            ),
+            P(
+                B("So: ", c=RED),
+                "our rule, expected cases × the share of households without a net, can separate "
+                "regions but not districts within a region.",
             ),
         ],
-        size=16,
+        size=15,
     )
     notes(
         s,
@@ -758,7 +810,7 @@ def build():
         4.5,
         [
             P(
-                "A split stratified by region still puts each test district's neighbours in the training set.",
+                "A split stratified by region still puts each test district's neighbors in the training set.",
                 bullet=True,
                 after=12,
             ),
@@ -773,7 +825,7 @@ def build():
                 after=12,
             ),
             P(
-                "So the model cannot yet rank districts in a region it has not seen, such as the 207 districts "
+                "So, the model cannot yet rank districts in a region it has not seen, such as the 207 districts "
                 "outside our data.",
                 bullet=True,
             ),
@@ -817,50 +869,74 @@ def build():
         "Remote Sensing, doi:10.1016/j.ophoto.2022.100018 (up to 28% overestimation of F1-score).",
     )
 
-    # 9. What the rule does
+    # 9. What the rule does, written as math; the speaker notes read it in words
     s = add(TEXT_HEAVY)
-    title(s, 11, "What our allocation rule actually does", width=W)
+    title(s, 11, "What our rule does with our data", width=W)
     drop(s, 12, 13)
     text(
         s,
         0.62,
-        1.55,
-        6.0,
-        4.8,
+        1.45,
+        6.85,
+        5.0,
         [
-            P(B("The rule", c=RED, s=18), after=4),
+            P(B("The rule, for each district i", c=RED, s=17), after=4),
+            P(*eq("log μ_i = log pop_i + β_0 + β_1 c_i"), s=18, after=2),
+            P(*eq("w_i = U_i × (1 − c_i / 100)"), s=18, after=2),
             P(
-                "Weight = upper 95% bound of expected cases (negative binomial with a population offset) × "
-                "(1 - net coverage). Hamilton's largest-remainder method turns the weights into exactly 50,000 "
-                "whole nets.",
-                after=14,
+                *eq(
+                    "q_i = 50,000 × w_i / Σ_j w_j,   A_i = ⌊q_i⌋ or ⌊q_i⌋ + 1,   Σ_i A_i = 50,000"
+                ),
+                s=15,
+                after=6,
             ),
-            P(B("What it does in practice", c=RED, s=18), after=4),
             P(
-                "Coverage is one number per region, so expected cases are population times a regional rate. "
-                "Within a region, nets follow population exactly.",
+                *eq(
+                    "Unit: district i. Target: μ_i, expected confirmed cases 2014-17, from a negative "
+                    "binomial (variance μ_i + αμ_i², α = 0.268). Metric: the weight w_i. U_i: upper 95% "
+                    "confidence bound for μ_i. c_i: % of homes with a net in i's region. A_i: nets, by "
+                    "Hamilton's largest-remainder method.",
+                    f=FONT,
+                ),
+                s=11.5,
+                c=MUTED,
+                after=10,
+            ),
+            P(B("What it does with our data", c=RED, s=17), after=4),
+            P(
+                *eq(
+                    "c_i takes one value per region, so inside a region nets follow population: "
+                    "8.5, 16.0 and 9.2 per 1,000 people.",
+                    f=FONT,
+                ),
                 bullet=True,
-                after=8,
+                after=6,
             ),
             P(
-                "The upper bound is a confidence interval for the mean, not a prediction interval. It adds one "
-                "multiplier per region: 1.20, 1.34 and 1.16.",
+                *eq(
+                    "U_i = μ_i × 1.20, 1.34 or 1.16: one multiplier per region, from a confidence "
+                    "interval for the mean.",
+                    f=FONT,
+                ),
                 bullet=True,
-                after=8,
+                after=6,
             ),
             P(
-                "The coverage coefficient is positive (+0.082 per point): regions with more nets had more malaria. "
-                "So higher coverage earns more nets per person.",
+                *eq(
+                    "β_1 = +0.082 per point: more nets went with more malaria, so the split between "
+                    "regions is uncertain.",
+                    f=FONT,
+                ),
                 bullet=True,
             ),
         ],
-        size=14,
+        size=13,
     )
     bar_chart(
         s,
-        7.0,
+        7.7,
         1.55,
-        5.7,
+        5.0,
         4.2,
         ["Northern (67.7%)", "Upper West (69.8%)", "Upper East (79.6%)"],
         [8.51, 9.17, 16.02],
@@ -869,14 +945,15 @@ def build():
     )
     text(
         s,
-        7.0,
+        7.7,
         5.8,
-        5.7,
-        0.55,
+        5.0,
+        0.6,
         [
             P(
-                "Nets per 1,000 people by region, with the share of households owning a "
-                "net (DHS 2022). Allocation rises with coverage, the opposite of the intent."
+                "Nets per 1,000 people by region, with the share of households owning a net (DHS 2022). "
+                "Upper East has the highest coverage and the most nets per person: the coefficient "
+                "reflects region, not the effect of nets, so the regional split is uncertain (slide 13)."
             )
         ],
         size=11,
@@ -884,16 +961,74 @@ def build():
     )
     notes(
         s,
-        "Say: Because coverage is a single regional number, the model can only tell regions apart, so "
-        "within a region every district gets the same nets per person. The coverage coefficient is "
-        "positive because nets went where malaria was worst, and coverage is from 2022 while cases are "
-        "from 2014-17, so it cannot be read as a protective effect.\n"
-        "Sources: notebooks/04_allocation.ipynb cell alloc_cd11 (coefficient +0.0823, p = 1.7e-07; "
-        "upper-to-expected ratios 1.198, 1.342, 1.162; nets per 1,000 people). Coverage values: "
-        "notebooks/02 cell cd06 and scripts/verify_claims.py section D.",
+        "Say: The slide writes the rule as math; say it in words. Line one: expected confirmed cases grow "
+        "in proportion to population and depend on the region's net coverage (a negative binomial model "
+        "with a population offset). Line two: each district's weight is the cautious upper end of its "
+        "expected cases times the share of homes without a net. Line three: Hamilton's largest-remainder "
+        "method turns the weights into exactly 50,000 whole nets. Then: because coverage is one number "
+        "per region, inside a region nets follow population; the upper bound adds one multiplier per "
+        "region; and the coverage coefficient is positive because nets went where malaria was worst, so "
+        "the split between regions is uncertain.\n"
+        "Symbols: i = district (the unit); mu_i = expected confirmed cases, 2014-17 (the target); "
+        "w_i = allocation weight (the metric); pop_i = population; c_i = % of homes owning a net in i's "
+        "region (DHS 2022); U_i = upper 95% confidence bound for mu_i; q_i = exact share; A_i = nets.\n"
+        "Sources: notebooks/04_allocation.ipynb cells alloc_cd05 (alpha 0.2677) and alloc_cd11 "
+        "(beta_1 = +0.0823, p = 1.7e-07; U_i / mu_i = 1.198, 1.342, 1.162; nets per 1,000 people); "
+        "src/models.py compute_allocation and hamilton. Coverage values: notebooks/02 cell cd06 and "
+        "scripts/verify_claims.py section D.",
     )
 
-    # 10. Proposed allocation map
+    # 10. Burden next to uncertainty: the two-map slide the course roadmap asks for
+    s = add(TEXT_HEAVY)
+    title(s, 11, "Where the need looks highest, and how sure we are", size=30, width=W)
+    drop(s, 12, 13)
+    for x, key, head, body in [
+        (
+            0.62,
+            "burden",
+            "Reported burden. ",
+            "Confirmed cases per person, 2014-17: highest in Upper East and Upper West, "
+            "lowest across Northern Region. Grey areas have no case data of their own.",
+        ),
+        (
+            6.81,
+            "uncertainty",
+            "How sure we are. ",
+            "Our upper bound sits 20% above the estimate in Northern, 34% in Upper East and "
+            "16% in Upper West: one number per region, because coverage is.",
+        ),
+    ]:
+        picture(s, fig[key], x, 1.45, 5.9, 3.8)
+        text(s, x, 5.35, 5.9, 0.6, [P(B(head), body)], size=12)
+    text(
+        s,
+        0.62,
+        6.02,
+        W,
+        0.4,
+        [
+            P(
+                B("Takeaway: ", c=RED),
+                "the rule uses the upper bound, so it leans towards the region we are least sure about.",
+            )
+        ],
+        size=14,
+    )
+    notes(
+        s,
+        "Say: The left map shows reported burden: confirmed cases per person over 2014-17. It is highest "
+        "in Upper East and Upper West and lowest across Northern Region, where the test data point to "
+        "under-testing. The right map shows how sure we are: the upper end of our 95% interval sits 20% "
+        "above the estimate in Northern, 34% in Upper East and 16% in Upper West. It is one number per "
+        "region because coverage is. Our rule uses that upper bound, so it leans towards the region we "
+        "are least sure about.\n"
+        "Sources: cases per person and the upper-to-expected ratios 1.198, 1.342 and 1.162: "
+        "notebooks/04_allocation.ipynb cell alloc_cd11. Both maps are drawn with "
+        "src/viz.plot_district_choropleth from models.compute_allocation, zoomed to the north like the "
+        "allocation map. The two-map layout (burden next to uncertainty) follows the course roadmap.",
+    )
+
+    # 11. Proposed allocation map
     s = add(IMAGE_TEXT)
     title(s, 11, "The proposed allocation", size=30, width=6.2)
     drop(s, 12)
@@ -927,7 +1062,7 @@ def build():
         "Savelugu-Nanton, Bunkpurugu-Yunyoo) show their total on both successor areas.",
     )
 
-    # 11. Gains and losses
+    # 12. Gains and losses
     s = add(TEXT_HEAVY)
     title(s, 11, "Who gains, who loses, and why", width=W)
     drop(s, 12, 13)
@@ -1022,7 +1157,7 @@ def build():
         "https://tth.gov.gh/about",
     )
 
-    # 12. Sensitivity
+    # 13. Sensitivity
     s = add(TABLE)
     title(s, 11, "What would change the answer", width=11.01)
     drop(s, 10)
@@ -1100,7 +1235,7 @@ def build():
         "Northern cluster-bootstrap bounds 61.4% and 74.0% (as in notebooks/02 cell cd39).",
     )
 
-    # 13. Equity
+    # 14. Equity
     s = add(TEXT_HEAVY)
     title(s, 11, "Equity: who this helps, and who it misses", size=30, width=W)
     drop(s, 12, 13)
@@ -1151,12 +1286,12 @@ def build():
         "Say: Equity is about who the rule helps and who it cannot see.\n"
         "Sources: 207 of 260 districts: scripts/verify_claims.py (map join). Test positivity and cases per person "
         "by region: scripts/verify_claims.py section E. Spraying and chemoprevention counts: scripts/verify_claims.py "
-        "section E, from data/raw/northern-ghana-districts-routine-data-2014-17.xlsx (these columns are "
-        "not in ghana_district_cases.csv). Campaign rules: PMI Ghana Malaria Operational Plan FY2017. "
+        "section E, from the raw surveillance workbook in the course data package (these columns are "
+        "not in the curated district file). Campaign rules: PMI Ghana Malaria Operational Plan FY2017. "
         "Privacy: git history holds no data files and no notebook outputs (checked 2026-09-22).",
     )
 
-    # 14. Limitations and next steps
+    # 15. Limitations and next steps
     s = add(TEXT_HEAVY)
     title(s, 11, "Limitations, and what we would do next", width=W)
     drop(s, 12, 13)
@@ -1227,7 +1362,7 @@ def build():
         "notebooks/02 cell cd06.",
     )
 
-    # 15. Close
+    # 16. Close
     s = add(CLOSING)
     title(s, 0, "Thank you. Questions?", size=60)
     text(
@@ -1250,8 +1385,7 @@ def build():
             P(
                 B("AI declaration: ", c=GOLD),
                 "we used AI tools to help aggregate our information and to generate this "
-                "presentation from our aggregated information. How AI was used is logged in "
-                "the project's WORKLOG.md.",
+                "presentation from our aggregated information.",
             )
         ],
         size=12,

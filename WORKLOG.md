@@ -41,6 +41,60 @@ Field notes:
 
 ---
 
+## 2026-09-25 · 00:15–00:19 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Claude (Claude Code, Opus 5.5), to push Eric's PowerPoint edits to the deck and copy them into the deck builder.
+**Did:**
+- Eric edited the deck in PowerPoint: slide 8 now reads "neighbors" and "So, the model cannot yet rank..."; slide 16's AI declaration no longer points to WORKLOG.md. The builder now produces the same text, checked slide by slide against the saved deck.
+**Blocked / open questions:**
+- PR #5 is not merged. Claude Code's permission check refused to merge it without a review, in line with `RULES.md` (one reviewer before merge). A teammate needs to review and merge it, or Eric can merge it on GitHub.
+
+## 2026-09-25 · 00:00–00:00 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Claude (Claude Code, Opus 5.5), to make the deck's speaker notes fit for submission.
+**Did:**
+- The deck will be submitted as a .pptx, so its speaker notes now carry only each slide's sources, plus the symbol key on slide 9 and the AI-declaration note on slide 16. The talk track lives in the panel script, outside the repo.
+- Removed a path into `data/` from slide 14's notes, which `CLAUDE.md` does not allow in committed files; the notes now name the raw surveillance workbook in the course package. Earlier commits of the deck still have that path in their notes. It is a path to a gitignored file, not data.
+**Decided:**
+- Keep the sources in the notes rather than deleting the notes: the brief's submission checklist asks for every statistic to cite a source.
+
+## 2026-09-24 · 23:46–23:59 GMT (start approximate) · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Claude (Claude Code, Opus 5.5), to read the case brief and lecture 01 that Eric added to the Machine Learning folder, to check the deck and the two prep pages against the brief's rubric, and to write slide 9's rule as math (a teammate's suggestion). It read code, reports and aggregates only, never rows from `data/`.
+**Did:**
+- Read the case brief (`Prosit1_Case_Module_Malaria_Allocation.pdf`, one folder up). Its rubric (section 7) asks for a clear target, unit and metric, for wide intervals to drive a fair allocation, and for heatmaps that tell the story; its deliverables ask for probability heatmaps. Slide 10, added earlier tonight, is the heatmap pair.
+- Slide 9 now states the rule as math: log μ_i = log pop_i + β_0 + β_1 c_i; w_i = U_i × (1 − c_i / 100); Hamilton's method for A_i with Σ A_i = 50,000; plus a key naming the unit (district), the target (μ_i) and the metric (w_i). The speaker notes read each line in words. The builder gained subscript support for this.
+- Rebuilt and rendered the deck; `black` and `ruff` pass.
+**Decided:**
+- Math on the slide, plain English in the talk: the presenter reads the formulas aloud in words.
+**Blocked / open questions:**
+- The brief says `ghana_district_cases.csv` includes rainfall, temperature, elevation and distance to water; our file and `data_dictionary.md` have none of them. This is not yet in the datasheet.
+- Learning outcome LO7 asks us to critique the WHO figure the brief quotes (263 million cases and 597,000 deaths in 2023); none of our reports do yet.
+- PR #5 still needs a teammate's review before merge.
+
+## 2026-09-24 · 22:26–23:45 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/theme-a
+**Assistant:** Claude (Claude Code, Opus 5.5), to write a plain-language panel script and a study guide for Quiz 1 (both published as claude.ai pages, not in the repo), to check the deck against the course's guidance files, and to add a two-map slide and wording fixes through the deck builder. It read code, reports and aggregates only, never rows from `data/`.
+**Did:**
+- Checked the deck against the grading weights in `CLAUDE.md` and the course's `SOLUTION_PLAN.md` and `prosit1-roadmap.html` (both one folder up). The roadmap asks for one slide with two maps side by side, expected burden and uncertainty; the deck had none.
+- Added slide 10, "Where the need looks highest, and how sure we are": confirmed cases per person by district next to how far the upper 95% bound sits above the estimate (20%, 34% and 16% by region, from the ratios 1.198, 1.342 and 1.162 in `04_allocation.ipynb` alloc_cd11). Both maps are drawn in `scripts/build_ashesi_deck.py` with `src/viz.plot_district_choropleth`, and an assert ties the slide text to the computed values.
+- Wording fixes: slide 2 gives the reason for population within a region and calls the regional totals a base case; slide 3 no longer claims we work at district level; slide 4 ends with what the rule can and cannot separate; slide 9 is retitled and its caption explains the positive coverage coefficient instead of calling it the opposite of the intent. Cross-references now point to slide 13.
+- Rebuilt the deck (now 16 slides), rendered it through PowerPoint and checked each changed slide. `black` and `ruff` pass on the builder.
+**Decided:**
+- Keep the slide order: both course files ask for the recommendation first, then the evidence, then questions. The new slide sits between the rule (9) and the allocation map (11).
+- No new analysis. The uncertainty map uses only numbers already in the claims table (C-04a).
+**Blocked / open questions:**
+- PR #4 still needs a teammate's review, and the deck in it changed tonight.
+- Correction, added after the push: PR #4 had already been merged into `main` by a teammate at 16:27 GMT, so tonight's deck change is not in `main`. It is in PR #5, which needs one reviewer before merge. Until then the 16-slide deck is on `feature/theme-a`.
+- Slide 1 still says Group 3; add presenters' names if the panel expects them.
+- Slide 4's left map labels North East region as Northern East. The label comes from the boundary file's region names (see `scripts/verify_claims.py`), not from our code; not changed tonight.
+**Next:**
+- Rehearse aloud with a timer. The script runs about 12:45 at 130 words a minute.
+
 ## 2026-09-24 · 09:20–10:46 GMT (start approximate) · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a
