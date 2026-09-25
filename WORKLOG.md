@@ -41,6 +41,17 @@ Field notes:
 
 ---
 
+## 2026-09-25 · 08:30–08:38 GMT · Eric Elikplim Sunu
+
+**Branch:** feature/references-slide
+**Assistant:** Claude (Claude Code, Opus 5.5), to add a References slide to the deck and verify every source on it. It read code, reports, the data dictionary and column names only, never rows from `data/`.
+**Did:**
+- Added slide 16, References, before Thank you (the deck is now 17 slides): seven published sources and six data, software and code sources, each marked with the slides it supports.
+- Checked each reference against the source itself: journal details and DOIs from the papers, the DHS reports' own recommended citations (FR387 for 2022; SPA6 for the 2002 service provision assessment, fetched from the DHS Program), the PMI plan's publication date on ReliefWeb, the Tamale Teaching Hospital page, and the scikit-learn and statsmodels citation pages. The quoted passages behind claims E-01 to E-05 are all present in the sources; the claims table now marks E-04 and E-05 as checked.
+**Blocked / open questions:**
+- `data_dictionary.md` names geoBoundaries as the boundary source, but the boundary files carry OCHA's COD-AB fields (`adm2_pcode`, `valid_on`, `version`); the slide cites COD-AB. Worth a line in the datasheet.
+- PR for this branch needs a reviewer before merge.
+
 ## 2026-09-25 · 00:15–00:19 GMT · Eric Elikplim Sunu
 
 **Branch:** feature/theme-a
