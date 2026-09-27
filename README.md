@@ -102,7 +102,7 @@ notebooks/    01_eda, 02_distributions, 03_pipeline_leakage, 04_allocation
 src/          shared logic: io, features, models, uncertainty, viz
 figures/      exported figures
 reports/      datasheet, framing, leakage audit, allocation, claims table,
-              group learning journal
+              group learning journal, and the deck (ITN_Allocation_Ashesi.pptx)
 scripts/      run_pipeline.py (runs everything) and verify_claims.py (re-checks quoted numbers)
 ```
 
@@ -190,7 +190,8 @@ the first two are discrepancies against the case brief and the data dictionary.
 1. **A reproducible notebook pipeline**, from cleaning to the leakage audit
    (`notebooks/`, run with `make`).
 2. **A resource allocation proposal** (`reports/allocation.md`, with
-   `reports/framing.md`), presented separately.
+   `reports/framing.md`), presented with the deck in
+   `reports/ITN_Allocation_Ashesi.pptx`.
 3. **One individual reflection per person**, including the AI-use declaration,
    submitted separately.
 

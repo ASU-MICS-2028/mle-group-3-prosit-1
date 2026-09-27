@@ -7,7 +7,8 @@ number, and the notebook cell, script or publication that produces it. Re-verifi
 - *Script* rows come from `scripts/verify_claims.py`, an independent re-computation that prints
   aggregates only (run it from the repo root).
 - *External* rows come from published sources. E-01 to E-03 were checked against the text of
-  the downloaded sources on 2026-09-24.
+  the downloaded sources on 2026-09-24, and E-04 and E-05 against the papers on 2026-09-25. The
+  deck's References slide lists every source.
 - Numbers retired as wrong or unreproducible are listed in `reports/LEARNING_JOURNAL.md`,
   section 4.
 
@@ -39,5 +40,5 @@ number, and the notebook cell, script or publication that produces it. Re-verifi
 | E-01 | A regional average can hide local risk: predicted prevalence across Greater Accra's 29 districts (2020 survey, children 6 months to 10 years, rapid tests) against the 2022 DHS regional figure (children 6 to 59 months, microscopy) | 0 to 49% vs 2% | Oppong et al., Malaria Journal, doi:10.1186/s12936-025-05724-9; Ghana DHS 2022 final report (FR387), Table 12.15 | External, checked 2026-09-24 |
 | E-02 | Ghana allocates ITNs by population: mass campaigns at about one net per two people, excluding districts with indoor residual spraying | | PMI Ghana Malaria Operational Plan FY2017 | External, checked 2026-09-24 |
 | E-03 | Tamale Teaching Hospital is the only tertiary hospital for the three northern regions; regional hospitals are secondary | | https://tth.gov.gh/about; Ghana Service Provision Assessment 2002, chapter 2 | External, checked 2026-09-24 |
-| E-04 | Random hold-outs overestimated model performance by up to 28% (F1-score) against spatially blocked validation | | Kattenborn et al. 2022, doi:10.1016/j.ophoto.2022.100018 | External |
-| E-05 | Random validation overstates the predictive power of spatial models, which spatially blocked validation reveals | | Ploton et al. 2020, Nature Communications 11:4540, doi:10.1038/s41467-020-18321-y | External |
+| E-04 | Random hold-outs overestimated model performance by up to 28% (F1-score) against spatially blocked validation | | Kattenborn et al. 2022, doi:10.1016/j.ophoto.2022.100018 | External, checked 2026-09-25 |
+| E-05 | Random validation overstates the predictive power of spatial models, which spatially blocked validation reveals | | Ploton et al. 2020, Nature Communications 11:4540, doi:10.1038/s41467-020-18321-y | External, checked 2026-09-25 |

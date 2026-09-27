@@ -18,8 +18,8 @@ __pycache__/
 # Executed notebook copies from scripts/run_pipeline.py
 build/
 
-# Kept on each member's machine, not in the submission: the deck (submitted
-# separately), personal journals, team process notes and assistant config.
+# Kept on each member's machine, not in the submission: the deck builder and
+# template, personal journals, team process notes and assistant config.
 _local/
 CLAUDE.md
 WORKLOG.md
