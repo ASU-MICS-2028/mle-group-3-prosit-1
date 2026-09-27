@@ -1,8 +1,8 @@
-# Policy Framing & Decision Architecture — ITN Allocation in Ghana
+# Policy Framing & Decision Architecture: ITN Allocation in Ghana
 
-**Project:** Data-Driven Resource Allocation of Insecticide-Treated Nets (ITNs) — ICS553 Prosit 1  
+**Project:** Data-Driven Resource Allocation of Insecticide-Treated Nets (ITNs), ICS553 Prosit 1  
 **Target Agency:** National Malaria Elimination Programme (NMEP), Ministry of Health, Ghana  
-**Authors:** Group 3 (Eric Elikplim Sunu, Lead Analyst & Statistician)
+**Authors:** Group 3
 
 ---
 
@@ -82,7 +82,7 @@ $$A_i^{\text{equitable}} = \text{HamiltonApportionment}\left(W_i, 50000\right)$$
 
 ---
 
-## 5. Defense Summary for the Ministry Panel
+## 5. The Two Rules Compared
 
 | Evaluation Dimension | Case-Proportional Comparator | Proposed Equitable Policy |
 |---|---|---|

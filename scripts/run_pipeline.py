@@ -89,7 +89,7 @@ def make_kernelspec(tmp: Path) -> str:
 
     Without this, nbconvert launches whichever interpreter the registered
     `python3` kernel happens to name, which is often not the environment the
-    pipeline was started in — the notebooks then fail on imports that the
+    pipeline was started in, so the notebooks then fail on imports that the
     preflight just confirmed were present.
     """
     name = "prosit1-run"
@@ -159,7 +159,6 @@ def main() -> int:
     ap.add_argument("--timeout", type=int, default=1800,
                     help="per-cell timeout in seconds (default 1800)")
     ap.add_argument("--skip-verify", action="store_true", help="skip verify_claims.py")
-    ap.add_argument("--deck", action="store_true", help="also rebuild the presentation")
     ap.add_argument("--clean", action="store_true", help="delete build/ first")
     ap.add_argument("--only", metavar="N",
                     help="run just one notebook, by number or name (e.g. --only 02)")
@@ -206,12 +205,6 @@ def main() -> int:
         if not run_script("scripts/verify_claims.py", "independent re-check of quoted numbers"):
             print()
             say("Notebooks ran, but claim verification failed.", RED)
-            return 1
-        print()
-
-    if args.deck:
-        say("Presentation")
-        if not run_script("scripts/build_ashesi_deck.py", "rebuild the deck from the template"):
             return 1
         print()
 

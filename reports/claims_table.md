@@ -1,6 +1,6 @@
 # Claims Table: Evidence and Source Tracing
 
-Every number in the presentation deck and the reports traces to a row here: the claim, the
+Every number in the presentation and the reports traces to a row here: the claim, the
 number, and the notebook cell, script or publication that produces it. Re-verified on
 2026-09-24 by re-running all four notebooks from clean kernels.
 

@@ -39,3 +39,20 @@ def build_preprocessor(
         transformers.append(("cat", cat_pipeline, categorical_features))
 
     return ColumnTransformer(transformers=transformers)
+
+
+def build_model_pipeline(
+    model,
+    numeric_features: Optional[List[str]] = None,
+    categorical_features: Optional[List[str]] = None,
+) -> Pipeline:
+    """Chain the preprocessor and a model so both are fitted on training rows only.
+
+    Returns an unfitted Pipeline.
+    """
+    return Pipeline(
+        steps=[
+            ("prep", build_preprocessor(numeric_features, categorical_features)),
+            ("model", model),
+        ]
+    )
