@@ -1,7 +1,7 @@
-# Datasheet for Datasets — Prosit 1 (ITN Allocation in Ghana)
+# Datasheet for Datasets: Prosit 1 (ITN Allocation in Ghana)
 
 **Academic Course:** ICS553 Machine Learning Essentials · Ashesi University · MICS 2028  
-**Advisory Group:** Group 3 Consultancy (Eric Elikplim Sunu, Lead)  
+**Advisory Group:** Group 3 Consultancy  
 **Deliverable:** Data Provenance, Governance, Sampling Design, and Audit of 9 Known Data Issues
 
 ---
@@ -30,10 +30,10 @@
 
 ### 2.3 District Routine Surveillance (`data/ghana_district_cases.csv`)
 - **Dimensions:** 50 administrative districts across 3 northern regions (Northern, Upper East, Upper West).
-- **Temporal Span:** Cumulative routine surveillance totals from 2014–2017.
+- **Temporal Span:** Cumulative routine surveillance totals from 2014-2017.
 - **Key Fields:**
   - `suspected_cases`, `tested_cases`, `positive_cases`: Routine outpatient clinic aggregates.
-  - `mean_population`: Mean annual district population estimate over the 2014–2017 period.
+  - `mean_population`: Mean annual district population estimate over the 2014-2017 period.
   - `positive_per_100k`: Cumulative positive tests per 100,000 residents.
   - `net_coverage_pct`: Imputed regional household net ownership from the 2022 DHS.
 
@@ -44,7 +44,7 @@
 ### 3.1 Two-Stage Cluster Sampling
 The DHS employs a probabilistic two-stage stratified cluster sampling design:
 1. **Stage 1 (PSUs):** Clusters (enumeration areas / census tracts) are selected with probability proportional to population size within rural/urban strata.
-2. **Stage 2 (Households):** A fixed number of households (typically 25–30) are systematically sampled within each selected cluster.
+2. **Stage 2 (Households):** A fixed number of households (typically 25-30) are systematically sampled within each selected cluster.
 
 ### 3.2 Design Effect (DEFF) & Variance Estimation
 Observations within the same cluster are positively correlated due to shared spatial ecology, socioeconomic clustering, and local mosquito breeding sites (intra-cluster correlation $\rho > 0$).
@@ -68,7 +68,7 @@ During pipeline execution, exploratory analysis and a full re-verification of th
 - **Mitigation:** We validated the survey weighting methodology by proving that our survey-weighted point estimate reproduces the published 2022 DHS regional net ownership to within **$0.09\text{ percentage points}$** ($67.69\%$ vs $67.60\%$). We explicitly document that interval validation remains unclosed due to upstream missing data.
 
 ### Issue 3: Regional-Level Resolution & Temporal Asynchrony of Net Coverage
-- **Finding:** In `ghana_district_cases.csv`, `net_coverage_pct` is recorded at the regional level, taking identical values for all districts within a given region (Northern $= 67.7\%$, Upper East $= 79.6\%$, Upper West $= 69.8\%$). Additionally, net coverage is measured in **2022**, whereas case counts were recorded in **2014–2017**.
+- **Finding:** In `ghana_district_cases.csv`, `net_coverage_pct` is recorded at the regional level, taking identical values for all districts within a given region (Northern $= 67.7\%$, Upper East $= 79.6\%$, Upper West $= 69.8\%$). Additionally, net coverage is measured in **2022**, whereas case counts were recorded in **2014-2017**.
 - **Impact:** `net_coverage_pct` is perfectly collinear with a region dummy and cannot enter a regression model alongside region indicators. Furthermore, the causal arrow is reversed (2022 nets cannot retroactively prevent 2014 infections).
 - **Mitigation:** Pre-fit design matrix checks (`models.check_design_matrix`) catch and reject simultaneous inclusion of region dummies. We document that the coefficient on `net_coverage_pct` captures a macro-regional effect rather than a causal district-level protective efficacy.
 

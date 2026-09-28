@@ -1,4 +1,4 @@
-# Prosit 1 — Data-driven allocation of insecticide-treated nets in Ghana
+# Prosit 1: Data-driven allocation of insecticide-treated nets in Ghana
 
 ICS553 Machine Learning Essentials · MICS 2028 · Group 3
 
@@ -12,12 +12,13 @@ ranking of districts, with an honest account of what we don't know.
 
 ---
 
-## ⚠️ Data rules — read before your first commit
+## ⚠️ Data rules: read before your first commit
 
 The household survey (`ghana_mis_sample.csv`) is **licensed health data**.
 
 - `data/` is gitignored. Never commit its contents.
-- Never paste survey rows into any AI assistant — not one row, not to debug a
+- Never upload survey rows to any external tool or service, including
+  generative AI tools (case brief, section 4). Not one row, not to debug a
   parsing error. Share column names, dtypes and the error message instead.
 - District-level aggregates are fine to discuss and share.
 
@@ -55,25 +56,55 @@ Place the course data package in `data/`. Then confirm it is ignored:
 git status   # no CSVs should appear
 ```
 
-Run the notebooks in numerical order. Everything must work from a fresh clone
-with no manual steps.
+## Running it
+
+One command runs the whole analysis, in order:
+
+```bash
+make                 # four notebooks in sequence, then verify_claims.py (~66s)
+```
+
+Or without `make`: `python scripts/run_pipeline.py`. It checks the environment
+and the data package first, stops at the first failing cell and prints its
+traceback, and executes into `build/` (gitignored) so the committed notebooks
+keep their stripped outputs. Useful flags:
+
+```bash
+python scripts/run_pipeline.py --only 02     # one notebook
+python scripts/run_pipeline.py --inplace     # keep outputs to read (strip before committing)
+make verify                                  # re-check numbers without re-running notebooks
+make strip                                   # strip notebook outputs before committing
+```
+
+Everything must work from a fresh clone with no manual steps.
 
 ---
 
-## Layout
+## Architecture
+
+![Prosit 1 architecture](docs/architecture.drawio.svg)
+
+The licensed files in `data/` are read only through `src/io.py`, which checks
+them against the column contract from `data_dictionary.md`. The four notebooks
+import the shared logic from `src/` and run in order; each writes its figures to
+`figures/`, and every number quoted in `reports/` cites the notebook cell that
+prints it. `scripts/run_pipeline.py` (what `make` calls) runs the notebooks and
+then `scripts/verify_claims.py`, which recomputes the headline numbers
+independently from `data/` and prints aggregates only.
+
+To edit the diagram, open `docs/architecture.drawio.svg` in draw.io
+(app.diagrams.net or the desktop app) and save it back in the same format.
 
 ```
-data/         gitignored — never committed
+data/         gitignored, never committed
+docs/         architecture diagram (draw.io)
 notebooks/    01_eda, 02_distributions, 03_pipeline_leakage, 04_allocation
 src/          shared logic: io, features, models, uncertainty, viz
-figures/      exported figures for the deck
-reports/      datasheet, leakage audit, allocation, claims table, the deck,
-              group learning journal (personal journals in reports/journals/)
-scripts/      build_ashesi_deck.py (builds the deck) and verify_claims.py (re-checks quoted numbers)
+figures/      exported figures
+reports/      datasheet, framing, leakage audit, allocation, claims table,
+              group learning journal, and the deck (ITN_Allocation_Ashesi.pptx)
+scripts/      run_pipeline.py (runs everything) and verify_claims.py (re-checks quoted numbers)
 ```
-
-One notebook per theme, one owner per notebook. Two people editing the same
-`.ipynb` produces merge conflicts that are painful to resolve by hand.
 
 ---
 
@@ -106,10 +137,6 @@ reproduce with `RANDOM_SEED = 42`):
   nets. Within each region it follows population, and a better-fitting
   region-effects model moves 7,720 nets between regions (`04_allocation.ipynb`).
 
-`reports/theme_a_guide.pdf` predates the switch of the A4 domain from Greater
-Accra to rural Northern Region; its numbers (1.8x, 0.03 points) are superseded
-by the notebook.
-
 ---
 
 ## Known data issues
@@ -125,13 +152,13 @@ the first two are discrepancies against the case brief and the data dictionary.
    `net_ownership_pct_ci_low/high` and `u5_itn_use_pct_ci_*` are present as
    columns but hold no values (0 of 76 rows). The data dictionary advertises
    them as the reference to check our bootstrap against. Prevalence CIs *are*
-   populated (54 of 76), but we cannot bootstrap prevalence — see issue 1. The
+   populated (54 of 76), but we cannot bootstrap prevalence (see issue 1). The
    check does not close; we validate the point estimate instead.
 3. **`net_coverage_pct` is region-level**, taking one value per region, so it is
    perfectly collinear with a region dummy and cannot enter a model alongside
    one. `src.models.check_design_matrix()` catches this before the fit. Its
-   coefficient is a region effect, not a district net effect — do not report it
-   as one. It is also measured in 2022 against case counts from 2014–17.
+   coefficient is a region effect, not a district net effect; do not report it
+   as one. It is also measured in 2022 against case counts from 2014-17.
 4. **`months_reported`, `year_start` and `year_end` are constant**, so they
    carry no information and are collinear with the intercept. The data
    dictionary flags `months_reported` for gap analysis in B1; that gap signal
@@ -143,7 +170,7 @@ the first two are discrepancies against the case brief and the data dictionary.
    `adm2_name` after normalisation. The 7 that do not are mostly pre-2018
    amalgamated districts since split (Garu-Tempane, Savelugu-Nanton,
    Bunkpurugu-Yunyoo, Kasena-Nankana, Tatale-Sangule) plus two spelling
-   variants. The boundaries are 2021 vintage; the surveillance is 2014–17. B1
+   variants. The boundaries are 2021 vintage; the surveillance is 2014-17. B1
    needs an explicit name-to-pcode crosswalk, and the unmatched districts are a
    reportable gap.
 7. **Eleven districts coded Northern now lie in Savannah or North East**, where
@@ -158,29 +185,15 @@ the first two are discrepancies against the case brief and the data dictionary.
 
 ---
 
-## Who owns what
+## Deliverables
 
-| Seat | Owns |
-| --- | --- |
-| Statistician | Distributions, model fitting, uncertainty |
-| Pipeline engineer | Repo and environment, splits, preprocessing, leakage audit |
-| Cartographer | Maps and figures, fresh-clone reproducibility check |
-| Analyst | Framing, datasheet, allocation rule, ethics, claims table |
-
-On top of these, each person holds one PBL role: chairperson, secretary,
-scribe, steward. Rotate both for Prosit 2.
-
-Full role detail, task board and decisions log live in the team Notion hub.
-
----
-
-## What we are producing
-
-1. **A reproducible notebook pipeline** — cleaning through to the leakage audit.
-2. **A resource allocation proposal** — 15-minute presentation to a mock
-   Ministry of Health panel, with probability heatmaps.
-3. **One individual reflection per person**, including the AI-use declaration.
-   Required to pass.
+1. **A reproducible notebook pipeline**, from cleaning to the leakage audit
+   (`notebooks/`, run with `make`).
+2. **A resource allocation proposal** (`reports/allocation.md`, with
+   `reports/framing.md`), presented with the deck in
+   `reports/ITN_Allocation_Ashesi.pptx`.
+3. **One individual reflection per person**, including the AI-use declaration,
+   submitted separately.
 
 ---
 
@@ -189,7 +202,7 @@ Full role detail, task board and decisions log live in the team Notion hub.
 District case counts are over-dispersed, so a Poisson under-fits the
 high-burden tail and a negative binomial fits better. The household survey is a
 cluster sample, so confidence intervals must come from a bootstrap that
-resamples clusters rather than households — resampling households pretends the
+resamples clusters rather than households. Resampling households pretends the
 design was simple random sampling and produces intervals that are too narrow.
 Survey estimates for thinly sampled domains therefore carry wide intervals.
 Our allocation rule weights each district by the upper confidence bound of its
@@ -210,4 +223,20 @@ See `RULES.md` for the full set. The short version:
 - Clear notebook outputs before committing.
 - Fixed `RANDOM_SEED`, no absolute paths, logic in `src/` not in cells.
 - Split before you fit. Nothing is fitted on data that includes the test set.
-- Every working session gets a `WORKLOG.md` entry before you push.
+
+---
+
+## AI-use declaration
+
+Declared under the course AI policy (case brief, sections 3 and 4). We used AI
+assistants (Claude Code, Google Gemini and Antigravity) to scaffold the
+repository and environment, to draft and debug notebook, module and script
+code, to draft report prose, and to re-run every notebook independently and
+re-check the quoted numbers.
+
+- Every number in the reports was re-run from a clean kernel and traced to a
+  notebook cell or script in `reports/claims_table.md`. Numbers that failed that
+  check are retired in `reports/LEARNING_JOURNAL.md`, section 4.
+- No survey rows were given to any assistant: only column names, dtypes, error
+  messages, code and district-level aggregates.
+- Each member's individual reflection gives their own declaration.

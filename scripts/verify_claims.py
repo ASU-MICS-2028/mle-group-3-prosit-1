@@ -234,7 +234,7 @@ tot = al.groupby("region_code")[["naive_allocation", "equitable_allocation"]].su
 print(
     "region totals (naive, equitable):",
     {k: tuple(v) for k, v in tot.iterrows()},
-    "| depot figures in allocation.md/deck: 12->24,980  15->17,547  16->7,473",
+    "| retired depot figures from an earlier draft: 12->24,980  15->17,547  16->7,473",
 )
 al["per1000"] = al.equitable_allocation / al.mean_population * 1000
 al["burden"] = (
@@ -366,8 +366,8 @@ for cov in (61.4, 74.0):
         f" {int(a3[a3.region_code == 12].equitable_allocation.sum()):,} (as reported: 24,196)"
     )
 
-# ---------------------------------------------------------------- E. deck numbers
-hdr("E. Numbers used in the Ashesi deck")
+# ---------------------------------------------------------------- E. report numbers
+hdr("E. Numbers used in the reports")
 tot_row = [
     line
     for line in (REAL / "reports/allocation.md").read_text().splitlines()

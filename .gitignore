@@ -14,3 +14,12 @@ __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 ~$*
+
+# Executed notebook copies from scripts/run_pipeline.py
+build/
+
+# Kept on each member's machine, not in the submission: the deck builder and
+# template, personal journals, team process notes and assistant config.
+_local/
+CLAUDE.md
+WORKLOG.md

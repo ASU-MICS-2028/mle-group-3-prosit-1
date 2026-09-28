@@ -1,9 +1,7 @@
 # Leakage Audit: Pipeline Integrity and Generalisation
 
-**Course:** ICS553 Machine Learning Essentials · Prosit 1  
-**Author:** Eric Elikplim Sunu  
+**Course:** ICS553 Machine Learning Essentials · Prosit 1 · Group 3  
 **Repository:** https://github.com/ASU-MICS-2028/mle-group-3-prosit-1  
-**Rubric anchor:** Pipeline and leakage handling (25% of the grade)  
 **Notebook:** [`notebooks/03_pipeline_leakage.ipynb`](../notebooks/03_pipeline_leakage.ipynb), re-verified 2026-09-24
 
 ---
@@ -47,14 +45,16 @@ itself is printed by `leak_cd10`.
   87,356). Over 500 seeds the gap averages 44 cases (sd 123), and the leaky version looks better in
   only 57% of seeds: noise, next to errors of about 90,000. With two features, no missing values
   and a Ridge model, there is little for this leak to exploit.
-- **Fix:** preprocessing lives inside a scikit-learn `Pipeline` (see `src/features.py`), fitted
-  after the split from `io.split_data`.
+- **Fix:** every disciplined model is `features.build_model_pipeline` (`src/features.py`): a
+  `ColumnTransformer` preprocessor (median imputer and scaler) chained to the model in one
+  `Pipeline`, fitted only on the training rows from `io.split_data`.
 
 ### Vector 2: target encoding
 - **Mechanism:** replacing a category with the mean outcome of its rows puts the answer into the
   feature. Each district appears once, so its encoding equals its own case count.
 - **Measured:** test R² 1.00, against 0.26 for features that do not use the outcome.
-- **Fix:** no target encoding in the pipeline; categories are one-hot encoded.
+- **Fix:** no target encoding in the pipeline. The preprocessor one-hot encodes categorical
+  columns; the model in this audit uses only the two numeric features.
 
 ### Vector 3: spatial autocorrelation (the headline)
 - **Mechanism:** neighbouring districts share rainfall, ecology and transmission, so a test
@@ -80,18 +80,6 @@ itself is printed by `leak_cd10`.
 - `net_coverage_pct` takes one value per region (Northern 67.7%, Upper East 79.6%, Upper West
   69.8%), so its coefficient is a regional effect. A 2022 indicator cannot cause 2014-17 cases, so
   we do not read it causally. See [`reports/datasheet.md`](datasheet.md).
-
----
-
-## 4. Viva answer
-
-**Question:** How do you know your model's performance is not an artefact of leakage?
-
-**Answer:** We built each leak deliberately and repeated every comparison over 500 seeds.
-Preprocessing leakage is real in principle but negligible for our model. Target encoding produced a
-fake R² of 1.00. For space, a region-stratified split is not enough: it gives the same error as a
-random split, while holding out a whole region makes the error about four times larger. So we
-report that the model does not generalise to unseen regions, and we do not use it to rank them.
 
 ---
 

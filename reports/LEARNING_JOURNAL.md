@@ -3,12 +3,10 @@
 ICS553 Machine Learning Essentials · MICS 2028 · Group 3 · Allocating insecticide-treated
 nets (ITNs) in Ghana
 
-For every member of the group. It explains the ideas behind our analysis in plain
-language, lists the numbers we can quote and the ones we must stop using, records what went
-wrong and how it was found, and helps with the panel and Quiz 1.
+It explains the ideas behind our analysis in plain language, lists the numbers we can quote
+and the ones we have retired, and records what went wrong and how it was found.
 
 - Keep it current: replace a stale section rather than adding one that contradicts it.
-- Personal journals go in `reports/journals/<your-name>.md`; a template is in section 8.
 - Last updated 2026-09-24, after every notebook was re-run from a clean kernel and each
   number below was checked against the output.
 
@@ -98,7 +96,7 @@ an independent re-computation that prints aggregates only (run it from the repo 
 
 ## 4. Numbers and claims to stop using
 
-These appeared in our reports or the old deck but are wrong, not reproducible, or
+These appeared in earlier drafts of our reports and slides but are wrong, not reproducible, or
 overstated.
 
 | Stop saying | Say instead | Why |
@@ -118,7 +116,7 @@ overstated.
 | Case-proportional allocation is the status quo | Ghana allocates ITNs by population, about one net per two people (web) | National malaria strategy |
 | Rural Northern is the most under-sampled region | It was chosen for its link to our districts; it ranks 10th of 16 by rural clusters | nb02 cd29 |
 | The weighting gap is a design effect | It comes from unequal selection probabilities | A design effect is a variance ratio |
-| 1.8 times wider, DEFF 3.3, 0.03 points | 2.12 times, DEFF 4.50, 0.09 points | The old numbers are from the Greater Accra domain; only `reports/theme_a_guide.pdf` still shows them |
+| 1.8 times wider, DEFF 3.3, 0.03 points | 2.12 times, DEFF 4.50, 0.09 points | The old numbers are from the Greater Accra domain used in an earlier draft |
 
 (web): from a web check on 2026-09-22, confirmed against the sources' own text on 2026-09-24:
 Tamale Teaching Hospital's own site, the Ghana Service Provision Assessment 2002 (chapter 2) and
@@ -162,65 +160,3 @@ the PMI Ghana Malaria Operational Plan FY2017. See the claims table, E-01 to E-0
    workbook all along.
 8. Re-run from a clean kernel before quoting anything, and update the claims table in the
    same commit.
-
----
-
-## 7. Panel and Quiz 1 practice
-
-**Why a negative binomial and not a Poisson?** The variance is 77,183 times the mean, and
-the dispersion ratio is still 54,147 after a population offset; a Poisson cannot fit that.
-The negative binomial adds one dispersion parameter.
-
-**Why resample clusters, not households?** Households in a cluster are alike, so treating
-them as independent overstates what we know. The cluster interval is 2.12 times wider.
-
-**What does a design effect of 4.5 mean?** The survey carries the information of a simple
-random sample about a quarter its size.
-
-**What does the 0.09-point match with the DHS validate?** Our weighting and coding, not our
-interval: the published ITN intervals are empty.
-
-**Does stratifying by region stop spatial leakage?** No. It keeps each region represented,
-but only holding out a whole region tests new geography.
-
-**Why does Tamale gain the most nets?** It is the most populous district, and within a
-region the rule treats everyone as equally at risk, even though Tamale reports the fewest
-cases per person.
-
-**Why do Bolgatanga and Wa lose nets?** The rule moves nets towards Northern Region overall,
-and both districts report more cases per person than their regional averages. Referral bias
-is a possible extra reason, not a finding.
-
-**What is the weakest part of the analysis?** The split between regions: coverage is one
-2022 number per region, its coefficient is confounded, and a better-fitting model moves
-7,720 nets.
-
-**How do you get exactly 50,000 nets?** Hamilton's largest-remainder method: whole-number
-parts first, then the leftovers to the largest remainders.
-
-**What would you do with more time?** Use today's regions and district-level spraying and
-chemoprevention, model risk with region effects, validate by holding out regions, and
-borrow strength across neighbouring districts with a small-area model.
-
----
-
-## 8. Template for your personal journal
-
-Copy this into `reports/journals/<your-name>.md` and write it in your own words; it feeds
-your individual reflection and AI-use declaration.
-
-```markdown
-# Learning journal: <your name>
-
-Role: <seat and PBL role> · Last updated: <date>
-
-## What I worked on
-
-## Concepts I can now explain in my own words
-
-## One thing that went wrong, and how it was found
-
-## How I used AI assistants, and what I checked (for my declaration)
-
-## Questions I still have
-```

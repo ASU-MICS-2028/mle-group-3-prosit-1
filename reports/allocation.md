@@ -1,7 +1,7 @@
 # ITN Resource Allocation Brief: Northern Ghana (50,000 Nets)
 
 **Prepared for:** National Malaria Elimination Programme (NMEP), Ghana Health Service  
-**Advisory Group:** Group 3 Consultancy (Eric Elikplim Sunu, Lead)  
+**Advisory Group:** Group 3 Consultancy  
 **Academic Context:** Ashesi University · ICS553 Machine Learning Essentials · Prosit 1  
 **Deliverable:** 50-District Allocation Schedule, Sensitivity Analysis, and Policy Defense
 

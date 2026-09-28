@@ -98,24 +98,14 @@ def plot_ci_comparison(
     return fig, ax
 
 
-def plot_district_choropleth(
-    adm0_path: Path,
-    adm1_path: Path,
-    adm2_path: Path,
-    case_df: pd.DataFrame,
-    value_col: str = "positive_per_100k",
-    title: str = "Malaria Surveillance Coverage & Case Rate across Ghana Districts",
-    legend_label: str = "Cumulative Positives per 100k (2014–17)",
-) -> Tuple[plt.Figure, plt.Axes]:
-    """Map Ghana's 260 districts, shading the 50 northern surveillance districts.
+def join_districts_to_adm2(
+    adm2: pd.DataFrame, case_df: pd.DataFrame, value_col: str = "positive_per_100k"
+) -> pd.DataFrame:
+    """Attach each surveillance district's value to its 2021 COD polygon(s).
 
-    Set legend_label to match value_col when it is not the case rate.
+    Returns a copy of adm2 with value_col filled where a district matched, NaN elsewhere.
     """
-    import geopandas as gpd
     import re
-
-    adm1 = gpd.read_file(adm1_path)
-    adm2 = gpd.read_file(adm2_path)
 
     def norm(s):
         s = re.sub(r"\b(Municipal|Metropolitan|District)\b", "", s, flags=re.I)
@@ -151,6 +141,27 @@ def plot_district_choropleth(
             for sub in ["bunkpurugunakpanduri", "yunyoonasuan"]:
                 if sub in adm_norm_map:
                     adm2_plot.loc[adm_norm_map[sub], value_col] = val
+
+    return adm2_plot
+
+
+def plot_district_choropleth(
+    adm0_path: Path,
+    adm1_path: Path,
+    adm2_path: Path,
+    case_df: pd.DataFrame,
+    value_col: str = "positive_per_100k",
+    title: str = "Malaria Surveillance Coverage & Case Rate across Ghana Districts",
+    legend_label: str = "Cumulative Positives per 100k (2014-17)",
+) -> Tuple[plt.Figure, plt.Axes]:
+    """Map Ghana's 260 districts, shading the 50 northern surveillance districts.
+
+    Set legend_label to match value_col when it is not the case rate.
+    """
+    import geopandas as gpd
+
+    adm1 = gpd.read_file(adm1_path)
+    adm2_plot = join_districts_to_adm2(gpd.read_file(adm2_path), case_df, value_col)
 
     fig, ax = plt.subplots(figsize=(8, 10))
     adm2_plot[adm2_plot[value_col].isna()].plot(
