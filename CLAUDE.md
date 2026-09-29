@@ -75,9 +75,8 @@ Two things that look fine and are not:
 
 ## Housekeeping
 
-After a working session that changed the repo, remind us to add a `WORKLOG.md`
-entry at the top: branch, which assistant was used and for what, what changed,
-decisions made, blockers. It is the evidence for our individual AI-use
-declarations, which are required to pass.
+After a working session that changed the repo, remind us to note which
+assistant was used and for what. It feeds our individual AI-use declarations,
+which are required to pass.
 
 Full team rules are in `RULES.md`.

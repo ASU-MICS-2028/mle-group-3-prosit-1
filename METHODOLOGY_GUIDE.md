@@ -22,14 +22,13 @@ When tackling high-stakes statistical modeling, epidemiological resource allocat
 
 ---
 
-## 2. The 5 Pillars of Our Workflow
+## 2. The 4 Pillars of Our Workflow
 
 ```mermaid
 flowchart TD
     A["1. Systematic Rigor & Leakage Defense\n(Split first, region hold-outs, pipeline encapsulation)"] --> B["2. The Learning Journal\n(Plain-English intuition + empirical matrices + caveats)"]
-    B --> C["3. The Engineering Worklog\n(Timestamped audit trail of Did / Decided / Blocked)"]
-    C --> D["4. Git Branch Discipline & Privacy\n(Feature branches, zero raw data commits, clean history)"]
-    E["5. Viva Oral Defense Readiness\n(Anticipating panel grill questions with clear, defensible answers)"]
+    B --> D["3. Git Branch Discipline & Privacy\n(Feature branches, zero raw data commits, clean history)"]
+    E["4. Viva Oral Defense Readiness\n(Anticipating panel grill questions with clear, defensible answers)"]
     D --> E
 ```
 
@@ -66,32 +65,7 @@ There are two kinds of journal. The **group journal** (`reports/LEARNING_JOURNAL
 
 ---
 
-### Pillar 3: The Engineering Worklog (`WORKLOG.md`)
-
-The Worklog is the official audit trail required for course passing and individual AI declarations.
-
-#### The Mandatory Worklog Format:
-Every session must append an entry to the top of `WORKLOG.md`:
-
-```markdown
-## YYYY-MM-DD · HH:MM–HH:MM GMT · [Your Name]
-
-**Branch:** [e.g., feature/theme-a]
-**Assistant:** [e.g., Gemini / Antigravity], to [concise 1-sentence summary of the task].
-**Did:**
-- Concrete action 1 (e.g., implemented cluster bootstrap in `src/uncertainty.py`).
-- Concrete action 2 (e.g., verified DHS weighted regional net ownership matches official report to 0.09pp).
-**Decided:**
-- Defensible modeling decision (e.g., adopted Negative Binomial due to variance/mean ratio of 77,183; rejected target encoding).
-**Blocked / open questions:**
-- Genuine uncertainties (e.g., boundary file mismatch for 7 post-2018 split districts).
-**Next:**
-- Concrete prioritized next steps for the upcoming session.
-```
-
----
-
-### Pillar 4: Git Branch Discipline & Data Privacy
+### Pillar 3: Git Branch Discipline & Data Privacy
 
 1. **Strict Data Privacy (Zero Row Leakage):**
    - **Never print, display, echo, or commit rows from `data/`**. The DHS household health dataset is licensed.
@@ -110,7 +84,7 @@ Every session must append an entry to the top of `WORKLOG.md`:
 
 ---
 
-### Pillar 5: Viva Exam Readiness (Oral Defense)
+### Pillar 4: Viva Exam Readiness (Oral Defense)
 
 When defending in front of the examination panel:
 
@@ -129,5 +103,4 @@ When defending in front of the examination panel:
 - [ ] Did I ensure NO raw data rows or `data/` files are staged or printed?
 - [ ] Is every model split-first and wrapped in a scikit-learn Pipeline?
 - [ ] Did I update the group journal (`reports/LEARNING_JOURNAL.md`) and my own journal in `reports/journals/`?
-- [ ] Did I record my time, assistant attribution, Did/Decided/Blocked/Next in `WORKLOG.md`?
 - [ ] Did I commit my changes with a clean conventional commit message?

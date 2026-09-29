@@ -210,4 +210,3 @@ See `RULES.md` for the full set. The short version:
 - Clear notebook outputs before committing.
 - Fixed `RANDOM_SEED`, no absolute paths, logic in `src/` not in cells.
 - Split before you fit. Nothing is fitted on data that includes the test set.
-- Every working session gets a `WORKLOG.md` entry before you push.
