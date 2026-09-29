@@ -41,6 +41,18 @@ Field notes:
 
 ---
 
+## 2026-09-29 · 14:00–22:57 GMT (start approximate) · Eric Elikplim Sunu
+
+**Branch:** personal/eric-sunu
+**Assistant:** Claude (Claude Code, Opus 5.5), to draft my one-page Prosit 1 reflection in LaTeX from my journal, the group journal and this worklog, using my own answers about what I can and cannot yet do; to rewrite my personal journal in my own voice; and to set up this personal branch. It read code, reports and our roles table only, never rows from `data/`.
+**Did:**
+- Created `personal/eric-sunu` from `feature/references-slide`: all my work up to 25 September, including the files the team's submission clean-up took off `main` (my journal, this worklog, the deck builder).
+- Rewrote `reports/journals/eric_sunu.md` in the first person, with my seat and PBL role from our roles table (cartographer, chairperson) and a section crediting my teammates' work from the git history.
+- Wrote my reflection (submitted on Canvas, not in the repo) and checked that every notebook cell and journal section it cites still exists on `main`.
+- Removed `reports/LEARNING_JOURNAL.md` from this branch; the group's journal stays on `main`.
+**Blocked / open questions:**
+- Kobina's and Clifford's contributions still need adding to my journal's team section.
+
 ## 2026-09-25 · 08:30–08:38 GMT · Eric Elikplim Sunu
 
 **Branch:** feature/references-slide
