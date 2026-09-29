@@ -28,55 +28,115 @@ history for everyone.
 
 ---
 
-## Setup
+## Running it on your own machine
 
-The project pins Python 3.11. If your machine has it:
+The data is not in this repository and never will be. Everything below runs
+locally; nothing is uploaded anywhere.
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/ASU-MICS-2028/mle-group-3-prosit-1.git
 cd mle-group-3-prosit-1
-python3.11 -m venv .venv && source .venv/bin/activate
+```
+
+### 2. Create the Python 3.11 environment
+
+The project pins Python 3.11. If your machine has it:
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
 If it does not (macOS ships 3.13, and `geopandas` has no 3.13 wheels), use conda:
 
 ```bash
-conda create -n prosit1 python=3.11 -y && conda activate prosit1
+conda create -n prosit1 python=3.11 -y
+conda activate prosit1
 pip install -r requirements.txt
-python -m ipykernel install --user --name prosit1 --display-name "Python 3.11 (prosit1)"
 ```
 
-`geopandas` is only needed from Theme B onward. If it fails to build, drop it
-and install it later with `conda install -c conda-forge geopandas=0.14.4`.
+If `geopandas` fails to build, install it from conda-forge instead:
+`conda install -c conda-forge geopandas=0.14.4`. The pipeline needs it for the maps.
 
-Place the course data package in `data/`. Then confirm it is ignored:
+### 3. Put the data in `data/`
 
-```bash
-git status   # no CSVs should appear
+The data comes from the ICS553 course package distributed by the instructor. It
+includes licensed DHS household data, so it is not shared here; ask the
+instructor or your group for the package. Copy it in so the folder looks like
+this (the file names must match exactly):
+
+```
+data/
+├── ghana_district_cases.csv        district case counts, 2014-17
+├── ghana_mis_sample.csv            DHS 2022 household sample (licensed)
+├── ghana_region_malaria.csv        regional survey indicators
+├── ghana_boundaries/
+│   ├── gha_admin0.geojson          country outline
+│   ├── gha_admin1.geojson          regions
+│   └── gha_admin2.geojson          districts
+└── raw/
+    └── northern-ghana-districts-routine-data-2014-17.xlsx
 ```
 
-## Running it
+- The three CSVs are needed for every notebook.
+- `ghana_boundaries/` is needed for the maps in notebooks 01 and 04. The course
+  package includes it. These are the public OCHA COD-AB boundaries for Ghana, so
+  if they are missing you can download them from HDX
+  (https://data.humdata.org/dataset/cod-ab-gha).
+- `raw/` is needed only by `scripts/verify_claims.py`, which re-checks the
+  spraying and chemoprevention figures against the original workbook.
 
-One command runs the whole analysis, in order:
+Then confirm git ignores it:
 
 ```bash
-make                 # four notebooks in sequence, then verify_claims.py (~66s)
+git status                                   # no data files should appear
+git check-ignore -v data/ghana_mis_sample.csv  # should print the .gitignore rule
 ```
 
-Or without `make`: `python scripts/run_pipeline.py`. It checks the environment
-and the data package first, stops at the first failing cell and prints its
-traceback, and executes into `build/` (gitignored) so the committed notebooks
-keep their stripped outputs. Useful flags:
+### 4. Run the whole analysis
 
 ```bash
-python scripts/run_pipeline.py --only 02     # one notebook
-python scripts/run_pipeline.py --inplace     # keep outputs to read (strip before committing)
-make verify                                  # re-check numbers without re-running notebooks
+make
+```
+
+This takes about 30 seconds. The runner first checks the environment and that
+the data files are in place (by name only; it never prints records), then runs
+the four notebooks in order and finishes with `scripts/verify_claims.py`, which
+recomputes the headline numbers independently. You should see `ok` for each
+step and `Pipeline complete`. Figures are refreshed in `figures/`, and the
+executed notebooks are written to `build/executed/` (gitignored), so the
+committed notebooks stay clean.
+
+Without `make`: `python scripts/run_pipeline.py`. Other useful commands:
+
+```bash
+python scripts/run_pipeline.py --only 02     # run one notebook
+python scripts/run_pipeline.py --inplace     # keep outputs in the notebooks to read them
+make verify                                  # re-check the numbers without re-running notebooks
 make strip                                   # strip notebook outputs before committing
 ```
 
-Everything must work from a fresh clone with no manual steps.
+### 5. Read the notebooks interactively (optional)
+
+```bash
+python -m ipykernel install --user --name prosit1 --display-name "Python 3.11 (prosit1)"
+jupyter lab
+```
+
+Open `notebooks/` and pick the "Python 3.11 (prosit1)" kernel. Run the notebooks
+in order, 01 to 04, from a clean kernel.
+
+### If something fails
+
+| Message | What to do |
+| --- | --- |
+| `Missing packages in this interpreter` | Activate the environment from step 2 and re-run. |
+| `Data package not found` | A file from step 3 is missing or misnamed in `data/`. |
+| `ghana_boundaries/ is absent` | Add the boundary files; the map cells need them. |
+| A notebook cell fails | The runner prints the cell and its traceback; fix it and re-run. |
 
 ---
 
