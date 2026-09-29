@@ -10,6 +10,10 @@ We are acting as an analytics consultancy advising the National Malaria
 Elimination Programme's allocation committee. The deliverable is a defensible
 ranking of districts, with an honest account of what we don't know.
 
+> **Want to run it yourself?** Follow [Running it on your own machine](#running-it-on-your-own-machine):
+> five steps from clone to results. The data is not in this repository;
+> [step 3](#3-put-the-data-in-data) lists exactly which files you need and where they go.
+
 ---
 
 ## ⚠️ Data rules: read before your first commit
