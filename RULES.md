@@ -47,7 +47,6 @@ These are not style preferences. Breaking them can fail the submission.
 │   ├── datasheet.md
 │   ├── leakage_audit.md
 │   └── claims_table.md
-├── WORKLOG.md
 ├── RULES.md
 ├── requirements.txt
 └── README.md
@@ -115,9 +114,6 @@ declared. These rules keep it honest and keep the work coherent.
 
 - **You own every line you commit.** If you can't explain a block to the panel,
   don't commit it. The panel asks.
-- **Log the session.** Every time an assistant writes or changes code that ends
-  up in the repo, add a `WORKLOG.md` entry before you push. This is not
-  optional — see section 7.
 - **Never paste survey rows into a prompt.** See section 1.
 - **Prefer asking for an explanation over asking for a file.** "Why is my
   negative binomial dispersion parameter negative" teaches you something.
@@ -131,28 +127,7 @@ declared. These rules keep it honest and keep the work coherent.
 
 ---
 
-## 7. The worklog
-
-`WORKLOG.md` is a single shared file. Every working session gets an entry,
-whether or not an AI was involved.
-
-**Why it exists.** Three reasons, in order of importance. It is the evidence
-for your individual AI declarations. It stops two people silently solving the
-same problem two different ways. And it gives the scribe the raw material for
-the report without having to interview everybody.
-
-**The rule:** append an entry at the end of any session where you changed
-something in the repo. Newest entries go at the **top**. Do it before you
-push, not at the end of the week.
-
-**Append only.** Never edit or delete someone else's entry. If something was
-wrong, write a new entry saying so.
-
-Format and an example are in `WORKLOG.md` itself.
-
----
-
-## 8. Meetings
+## 7. Meetings
 
 - **Ten minutes, start of every working session.** What I did, what I'm doing,
   what's blocking me. That's it.
@@ -163,7 +138,7 @@ Format and an example are in `WORKLOG.md` itself.
 
 ---
 
-## 9. Definition of done
+## 8. Definition of done
 
 A task is not done when the code runs on your laptop. It is done when:
 
@@ -171,5 +146,4 @@ A task is not done when the code runs on your laptop. It is done when:
 - [ ] no absolute paths, no manual steps, no "just run this cell first"
 - [ ] a second person has reviewed it
 - [ ] every number it produces is traceable to a cell
-- [ ] `WORKLOG.md` has the entry
 - [ ] it's merged to `main`
